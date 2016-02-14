@@ -21,6 +21,7 @@ public class MapController : MonoBehaviour {
 	
 	private IDictionary<double, IList<double>> _wayDictionary;
 	private IDictionary<double, float[]> _nodeDictionary;
+	private IDictionary<double, IList<double>> _nodeConnectionDictionary;
 
 	// Use this for initialization
 	void Start () {
@@ -32,16 +33,59 @@ public class MapController : MonoBehaviour {
 
 		_wayDictionary = new Dictionary<double, IList<double>> ();
 		_nodeDictionary = new Dictionary<double, float[]> ();
+		_nodeConnectionDictionary = new Dictionary<double, IList<double>> ();
 
 		InitWorldBounds ();
 		InitNodeDictionary ();
 		InitWayDictionary ();
+		InitNodeConnectionDictionary ();
 		DrawNodes (_nodeDictionary);
 		DrawWays (_wayDictionary, _nodeDictionary);
 
 	}
 
 #region Init Functions
+	void InitNodeConnectionDictionary(){
+		//Get a way node and look at the one next to it. THen find the first double in the connection
+		//dictionary and add the next and previous nodes to the list if not already added.
+		double fromNode = double.NaN;
+		double toNode = double.NaN;
+
+		foreach (IList<double> wayNode in _wayDictionary.Values) {
+			for (int i = 0; i < wayNode.Count; i++) {
+				toNode = wayNode.IndexOf (i);
+				if (toNode == double.NaN) {
+					continue;
+				}
+				//Debug.Log ("To does not equal null!");
+				if (fromNode == double.NaN) {
+					fromNode = toNode;
+					continue;
+				}
+				//Adding to from -> to
+				if (_nodeConnectionDictionary.ContainsKey (fromNode)) {
+					if (!_nodeConnectionDictionary [fromNode].Contains (toNode)) {
+						_nodeConnectionDictionary [fromNode].Add (toNode);
+					}
+				} else {
+					IList<double> newNodeList = new List<double> ();
+					newNodeList.Add (toNode);
+					_nodeConnectionDictionary.Add (fromNode, newNodeList);
+				}
+				//Adding to -> from
+				if (_nodeConnectionDictionary.ContainsKey (toNode)) {
+					if (!_nodeConnectionDictionary [toNode].Contains (fromNode)) {
+						_nodeConnectionDictionary [toNode].Add (fromNode);
+					}
+				} else {
+					IList<double> newNodeList = new List<double> ();
+					newNodeList.Add (fromNode);
+					_nodeConnectionDictionary.Add (toNode, newNodeList);
+				}
+			}
+		}
+	}
+
 	void InitWayDictionary(){
 		foreach (XmlNode w in _ways) {
 			bool isHighway = false;
