@@ -36,47 +36,10 @@ public class MapController : MonoBehaviour {
 		InitWorldBounds ();
 		InitNodeDictionary ();
 		InitWayDictionary ();
-		DrawNodes ();
+		DrawNodes (_nodeDictionary);
 		DrawWays (_wayDictionary, _nodeDictionary);
 
 	}
-
-//					XmlNode from = null;
-//					XmlNode to = null;
-//					foreach (XmlNode wayNode in nd) {
-//						if (wayNode.Name == "nd") {
-//							to = getNodeByID (double.Parse (wayNode.Attributes.GetNamedItem ("ref").Value), _nodes);
-//
-//							if (to == null) {
-//								continue;
-//							}
-//							if (from == null) {
-//								from = to;
-//								continue;
-//							}
-//
-//							float fromLat = MapMetaInformation.Instance.MapLatValue (float.Parse (from.Attributes.GetNamedItem ("lat").Value));
-//							float fromLon = MapMetaInformation.Instance.MapLonValue (float.Parse (from.Attributes.GetNamedItem ("lon").Value));
-//
-//							float toLat = MapMetaInformation.Instance.MapLatValue (float.Parse (to.Attributes.GetNamedItem ("lat").Value));
-//							float toLon = MapMetaInformation.Instance.MapLonValue (float.Parse (to.Attributes.GetNamedItem ("lon").Value));
-//
-//							//Debug.DrawLine (new Vector3 (fromLat, 0, fromLon), new Vector3 (toLat, 0, toLon));
-
-
-
-//		while (_mapXML.Read()) {
-//			//If name == bounds then use it to update the meta information
-//			switch (_mapXML.Name){
-//			case ("bounds"):
-//				MapMetaInformation.Instance.SetMetaValues(float.Parse(_mapXML.GetAttribute(0)),float.Parse(_mapXML.GetAttribute(1)),float.Parse(_mapXML.GetAttribute(2)),float.Parse(_mapXML.GetAttribute(3)));
-//				break;
-//			case ("node"):
-////				_nodes.Add((XmlNode) _mapXML);
-//				break;
-//			}
-//
-//		}
 
 #region Init Functions
 	void InitWayDictionary(){
@@ -140,8 +103,8 @@ public class MapController : MonoBehaviour {
 
 #region Draw Functions
 
-	void DrawNodes(){
-		foreach (float[] n in _nodeDictionary.Values) {
+	void DrawNodes(IDictionary<double, float[]> nodeDict){
+		foreach (float[] n in nodeDict.Values) {
 			float x = MapMetaInformation.Instance.MapLatValue (n[0]);
 			float y = MapMetaInformation.Instance.MapLonValue (n[1]);
 			Instantiate (NodeObject, new Vector3 (x, 0, y), Quaternion.identity);
