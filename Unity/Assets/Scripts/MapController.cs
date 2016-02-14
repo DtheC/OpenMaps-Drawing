@@ -3,6 +3,7 @@ using System.Collections;
 using System.Xml;
 using System.Xml.Serialization;
 using System.Collections.Generic;
+using System.Linq;
 
 public class MapController : MonoBehaviour {
 	
@@ -39,7 +40,8 @@ public class MapController : MonoBehaviour {
 		InitNodeDictionary ();
 		InitWayDictionary ();
 		InitNodeConnectionDictionary ();
-		DrawNodes (_nodeDictionary);
+		//DrawNodes (_nodeDictionary);
+		DrawRandomNode ();
 		DrawWays (_wayDictionary, _nodeDictionary);
 
 	}
@@ -183,6 +185,22 @@ public class MapController : MonoBehaviour {
 			}
 		}
 	}
+
+	void DrawRandomNode(){
+		foreach (IList<double> value in RandomValues(_nodeConnectionDictionary).Take(1))
+		{
+			foreach (double nodeID in value) {
+				DrawNode(nodeID);
+			}
+		}
+	}
+
+	void DrawNode(double id){
+		float[] f = getNodeLatLonByID (id, _nodeDictionary);
+		float Lat = MapMetaInformation.Instance.MapLatValue (f[0]);
+		float Lon = MapMetaInformation.Instance.MapLonValue (f[1]);
+		Instantiate (NodeObject, new Vector3 (Lat, 0, Lon), Quaternion.identity);
+	}
 	
 
 #endregion
@@ -197,5 +215,16 @@ public class MapController : MonoBehaviour {
 	private float[] getNodeLatLonByID(double id, IDictionary<double, float[]> nodes) {
 		return nodes[id];
 	}
+
+	public IEnumerable<TValue> RandomValues<TKey, TValue>(IDictionary<TKey, TValue> dict)
+	{
+			List<TValue> values = Enumerable.ToList(dict.Values);
+			int size = dict.Count;
+			while(true)
+			{
+				yield return values[Random.Range(0,size)];
+			}
+		                          }
+
 #endregion
-}
+		                          }
