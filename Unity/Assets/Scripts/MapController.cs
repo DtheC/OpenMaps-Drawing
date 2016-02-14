@@ -33,71 +33,12 @@ public class MapController : MonoBehaviour {
 		_wayDictionary = new Dictionary<double, IList<double>> ();
 		_nodeDictionary = new Dictionary<double, float[]> ();
 
-		XmlNodeList _bounds = _mapXML.SelectNodes ("//bounds");
+		InitWorldBounds ();
+		InitNodeDictionary ();
+		InitWayDictionary ();
+		DrawNodes ();
+		DrawWays (_wayDictionary, _nodeDictionary);
 
-//		foreach (XmlNode b in _bounds) {
-//			//Debug.Log (b.Attributes.GetNamedItem("minlat").Value);
-//			MapMetaInformation.Instance.SetMetaValues(
-//				float.Parse(b.Attributes.GetNamedItem("minlat").Value),
-//				float.Parse(b.Attributes.GetNamedItem("maxlat").Value),
-//				float.Parse(b.Attributes.GetNamedItem("minlon").Value),
-//				float.Parse(b.Attributes.GetNamedItem("maxlon").Value));
-//		}
-
-		foreach (XmlNode n in _nodes) {
-			float x = float.Parse (n.Attributes.GetNamedItem ("lat").Value);
-			float y = float.Parse (n.Attributes.GetNamedItem ("lon").Value);
-
-			_nodeDictionary.Add (double.Parse (n.Attributes.GetNamedItem ("id").Value), new float[] {x, y});
-
-			if (_minLat > x || _minLat == float.MaxValue) {
-				_minLat = x;
-			}
-			if (_maxLat < x || _maxLat == float.MaxValue) {
-				_maxLat = x;
-			}
-			if (_minLon > y || _minLon == float.MaxValue) {
-				_minLon = y;
-			}
-			if (_maxLon < y || _maxLon == float.MaxValue) {
-				_maxLon = y;
-			}
-		}
-
-		MapMetaInformation.Instance.SetMetaValues (_minLat, _maxLat, _minLon, _maxLon);
-
-		foreach (XmlNode n in _nodes) {
-			float x = float.Parse (n.Attributes.GetNamedItem ("lat").Value);
-			float y = float.Parse (n.Attributes.GetNamedItem ("lon").Value);
-			x = MapMetaInformation.Instance.MapLatValue (x);
-			y = MapMetaInformation.Instance.MapLonValue (y);
-			//Debug.Log(x/MapMetaInformation.Instance.MapWidth);
-			Instantiate (NodeObject, new Vector3 (x, 0, y), Quaternion.identity);
-		}
-
-		foreach (XmlNode w in _ways) {
-			bool isHighway = false;
-			//First check if this way has a highway tag.
-			foreach (XmlNode t in w.ChildNodes) {
-				if (t.Name == "tag") {
-					if (t.Attributes.GetNamedItem ("k").Value.ToString () == "highway") {
-						isHighway = true;
-					}
-				}
-			}
-			
-			if (isHighway) {
-				//If it is a highway then get all the nd references into a list then add the way id and the node refs into the wayDictionary
-				double wayId = double.Parse (w.Attributes.GetNamedItem ("id").Value);
-				IList<double> wayNodes = new List<double> ();
-				//If is highway add it to the way Dictionary.
-				XmlNodeList nd = w.SelectNodes ("nd");
-				foreach (XmlNode wayNode in nd) {
-					wayNodes.Add (double.Parse (wayNode.Attributes.GetNamedItem ("ref").Value));
-				}
-				_wayDictionary.Add (wayId, wayNodes);
-			}
-		}
 	}
 
 //					XmlNode from = null;
@@ -137,18 +78,117 @@ public class MapController : MonoBehaviour {
 //
 //		}
 
-
-	private XmlNode getNodeByID(double id, XmlNodeList nodes) {
-		foreach (XmlNode n in nodes) {
-			if (double.Parse (n.Attributes.GetNamedItem("id").Value) == id){
-				return n;
+#region Init Functions
+	void InitWayDictionary(){
+		foreach (XmlNode w in _ways) {
+			bool isHighway = false;
+			//First check if this way has a highway tag.
+			foreach (XmlNode t in w.ChildNodes) {
+				if (t.Name == "tag") {
+					if (t.Attributes.GetNamedItem ("k").Value.ToString () == "highway") {
+						isHighway = true;
+					}
+				}
+			}
+			
+			if (isHighway) {
+				//If it is a highway then get all the nd references into a list then add the way id and the node refs into the wayDictionary
+				double wayId = double.Parse (w.Attributes.GetNamedItem ("id").Value);
+				IList<double> wayNodes = new List<double> ();
+				//If is highway add it to the way Dictionary.
+				XmlNodeList nd = w.SelectNodes ("nd");
+				foreach (XmlNode wayNode in nd) {
+					wayNodes.Add (double.Parse (wayNode.Attributes.GetNamedItem ("ref").Value));
+				}
+				_wayDictionary.Add (wayId, wayNodes);
 			}
 		}
-		return null;
+		Debug.Log ("Way dictionary initalised with " + _wayDictionary.Count + " items.");
+	}
+
+	void InitNodeDictionary(){
+		foreach (XmlNode n in _nodes) {
+			float x = float.Parse (n.Attributes.GetNamedItem ("lat").Value);
+			float y = float.Parse (n.Attributes.GetNamedItem ("lon").Value);
+			_nodeDictionary.Add (double.Parse (n.Attributes.GetNamedItem ("id").Value), new float[] {x, y});
+		}
+		Debug.Log ("Node dictionary initalised with " + _nodeDictionary.Count + " items.");
+	}
+
+	void InitWorldBounds(){
+		foreach (XmlNode n in _nodes) {
+			float x = float.Parse (n.Attributes.GetNamedItem ("lat").Value);
+			float y = float.Parse (n.Attributes.GetNamedItem ("lon").Value);
+
+			if (_minLat > x || _minLat == float.MaxValue) {
+				_minLat = x;
+			}
+			if (_maxLat < x || _maxLat == float.MaxValue) {
+				_maxLat = x;
+			}
+			if (_minLon > y || _minLon == float.MaxValue) {
+				_minLon = y;
+			}
+			if (_maxLon < y || _maxLon == float.MaxValue) {
+				_maxLon = y;
+			}
+		}
+		MapMetaInformation.Instance.SetMetaValues (_minLat, _maxLat, _minLon, _maxLon);
+	}
+
+#endregion
+
+#region Draw Functions
+
+	void DrawNodes(){
+		foreach (float[] n in _nodeDictionary.Values) {
+			float x = MapMetaInformation.Instance.MapLatValue (n[0]);
+			float y = MapMetaInformation.Instance.MapLonValue (n[1]);
+			Instantiate (NodeObject, new Vector3 (x, 0, y), Quaternion.identity);
+		}
+	}
+
+	void DrawWays(IDictionary<double, IList<double>> wayDict, IDictionary<double, float[]> nodeDict){
+		foreach (List<double> d in wayDict.Values) {
+			//Debug.Log ("Way contains "+d.Count+" nodes");
+			float[] to = null;
+			float[] from = null;
+			for (int i = 0; i < d.Count; i++){
+				to = getNodeLatLonByID(d[i], nodeDict);
+
+				if (to == null) {
+					continue;
+				}
+				//Debug.Log ("To does not equal null!");
+				if (from == null) {
+					from = to;
+					continue;
+				}
+				//Debug.Log ("From does not equal null!");
+
+				float fromLat = MapMetaInformation.Instance.MapLatValue (from[0]);
+				float fromLon = MapMetaInformation.Instance.MapLonValue (from[1]);
+
+				float toLat = MapMetaInformation.Instance.MapLatValue (to[0]);
+				float toLon = MapMetaInformation.Instance.MapLonValue (to[1]);
+
+				Debug.DrawLine (new Vector3 (fromLat, 0, fromLon), new Vector3 (toLat, 0, toLon),Color.green, 2000, false);
+			}
+		}
 	}
 	
-	// Update is called once per frame
-	void Update () {
-	
+
+#endregion
+
+#region Helper functions
+	/// <summary>
+	/// Gets the Latitude and Longitude of a specific node by id. This lat and lon are NOT mapped to world.
+	/// </summary>
+	/// <returns>Lat and Lon as 2 element float array</returns>
+	/// <param name="id">Node Id</param>
+	/// <param name="nodes">Node Dictionary</param>
+	private float[] getNodeLatLonByID(double id, IDictionary<double, float[]> nodes) {
+		return nodes[id];
 	}
+#endregion
 }
