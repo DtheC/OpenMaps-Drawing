@@ -42,6 +42,8 @@ public class MapController : MonoBehaviour {
 		InitNodeConnectionDictionary ();
 		//DrawNodes (_nodeDictionary);
 		DrawRandomNode ();
+		DrawRandomNode ();
+		DrawRandomNode ();
 		DrawWays (_wayDictionary, _nodeDictionary);
 
 	}
@@ -187,16 +189,23 @@ public class MapController : MonoBehaviour {
 	}
 
 	void DrawRandomNode(){
-		foreach (IList<double> value in RandomValues(_nodeConnectionDictionary).Take(1))
-		{
-			foreach (double nodeID in value) {
-				DrawNode(nodeID);
-			}
+		int randomNodeIndex = Random.Range (0, _nodeConnectionDictionary.Count);
+		Debug.Log (_nodeConnectionDictionary.Count);
+		KeyValuePair<double, IList<double>> selectedNode = _nodeConnectionDictionary.ElementAt (randomNodeIndex);
+		Debug.Log (selectedNode.Key);
+
+		DrawNode(selectedNode.Key);
+		foreach (double nID in selectedNode.Value) {
+			Debug.Log(nID);
+			DrawNode(nID);
 		}
 	}
 
 	void DrawNode(double id){
 		float[] f = getNodeLatLonByID (id, _nodeDictionary);
+		if (f == null) {
+			return;
+		}
 		float Lat = MapMetaInformation.Instance.MapLatValue (f[0]);
 		float Lon = MapMetaInformation.Instance.MapLonValue (f[1]);
 		Instantiate (NodeObject, new Vector3 (Lat, 0, Lon), Quaternion.identity);
@@ -213,18 +222,13 @@ public class MapController : MonoBehaviour {
 	/// <param name="id">Node Id</param>
 	/// <param name="nodes">Node Dictionary</param>
 	private float[] getNodeLatLonByID(double id, IDictionary<double, float[]> nodes) {
-		return nodes[id];
+		float[] r;
+		try {
+			r = nodes[id];	
+		} catch (System.Exception ex) {
+			return null;
+		}
+		return r;
 	}
-
-	public IEnumerable<TValue> RandomValues<TKey, TValue>(IDictionary<TKey, TValue> dict)
-	{
-			List<TValue> values = Enumerable.ToList(dict.Values);
-			int size = dict.Count;
-			while(true)
-			{
-				yield return values[Random.Range(0,size)];
-			}
-		                          }
-
 #endregion
-		                          }
+}
