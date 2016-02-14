@@ -67,7 +67,7 @@ public class MapController : MonoBehaviour {
 		}
 
 		foreach (XmlNode w in _ways) {
-			XmlNodeList nd = w.ChildNodes;
+			XmlNodeList nd = w.SelectNodes("//nd");
 			bool isHighway = false;
 			//First check if this way has a highway tag.
 			foreach (XmlNode t in w.ChildNodes) {
@@ -81,8 +81,8 @@ public class MapController : MonoBehaviour {
 					XmlNode from = null;
 					XmlNode to = null;
 					foreach (XmlNode wayNode in nd) {
-						if (wayNode.Name == "nd") {
-							to = getNodeByID (double.Parse (wayNode.Attributes.GetNamedItem ("id").Value), _nodes);
+
+							to = getNodeByID (double.Parse (wayNode.Attributes.GetNamedItem ("ref").Value), _nodes);
 
 							if (to == null) {
 								continue;
@@ -99,8 +99,6 @@ public class MapController : MonoBehaviour {
 							float toLon = MapMetaInformation.Instance.MapLonValue (float.Parse (to.Attributes.GetNamedItem ("lon").Value));
 
 							Debug.DrawLine (new Vector3 (fromLat, 0, fromLon), new Vector3 (toLat, 0, toLon));
-
-						}
 					}
 				}
 			}
