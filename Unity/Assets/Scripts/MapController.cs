@@ -42,8 +42,6 @@ public class MapController : MonoBehaviour {
 		InitNodeConnectionDictionary ();
 		//DrawNodes (_nodeDictionary);
 		DrawRandomNode ();
-		DrawRandomNode ();
-		DrawRandomNode ();
 		DrawWays (_wayDictionary, _nodeDictionary);
 
 	}
@@ -52,17 +50,19 @@ public class MapController : MonoBehaviour {
 	void InitNodeConnectionDictionary(){
 		//Get a way node and look at the one next to it. THen find the first double in the connection
 		//dictionary and add the next and previous nodes to the list if not already added.
-		double fromNode = double.NaN;
-		double toNode = double.NaN;
+
 
 		foreach (IList<double> wayNode in _wayDictionary.Values) {
+			double fromNode = double.NaN;
+			double toNode = double.NaN;
 			for (int i = 0; i < wayNode.Count; i++) {
 				toNode = wayNode[i];
-				if (toNode == double.NaN) {
+				//Debug.Log(toNode);
+				if (double.IsNaN(toNode)) {
 					continue;
 				}
 				//Debug.Log ("To does not equal null!");
-				if (fromNode == double.NaN) {
+				if (double.IsNaN(fromNode)) {
 					fromNode = toNode;
 					continue;
 				}
@@ -88,7 +88,14 @@ public class MapController : MonoBehaviour {
 				}
 			}
 		}
-		Debug.Log (_nodeConnectionDictionary.Count);
+		//Debug writing
+//		foreach (KeyValuePair<double, IList<double>> kvp in _nodeConnectionDictionary)
+//		{
+//			//Debug.Log ("Number of npde connections: "+kvp.Value.Count);
+//			foreach(double f in kvp.Value){
+//				Debug.Log ("Key = "+kvp.Key+", Value = "+f);
+//			}
+//		}
 	}
 
 	void InitWayDictionary(){
@@ -193,11 +200,11 @@ public class MapController : MonoBehaviour {
 		int randomNodeIndex = Random.Range (0, _nodeConnectionDictionary.Count);
 		//Debug.Log (_nodeConnectionDictionary.Count);
 		KeyValuePair<double, IList<double>> selectedNode = _nodeConnectionDictionary.ElementAt (randomNodeIndex);
-		//Debug.Log (selectedNode.Key);
+		Debug.Log (selectedNode.Key);
 
 		DrawNode(selectedNode.Key);
-		foreach (double nID in selectedNode.Value) {
-			//Debug.Log(nID);
+		foreach (double nID in selectedNode.Value.AsEnumerable()) {
+			Debug.Log(nID);
 			DrawNode(nID);
 		}
 	}
