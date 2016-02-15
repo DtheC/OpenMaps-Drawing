@@ -42,6 +42,9 @@ public class MapController : MonoBehaviour {
 		InitNodeConnectionDictionary ();
 		//DrawNodes (_nodeDictionary);
 		DrawRandomNode ();
+		DrawRandomNode ();
+		DrawRandomNode ();
+		DrawRandomNode ();
 		DrawWays (_wayDictionary, _nodeDictionary);
 
 	}
@@ -86,6 +89,7 @@ public class MapController : MonoBehaviour {
 					newNodeList.Add (fromNode);
 					_nodeConnectionDictionary.Add (toNode, newNodeList);
 				}
+				fromNode = toNode;
 			}
 		}
 		//Debug writing
@@ -200,11 +204,10 @@ public class MapController : MonoBehaviour {
 		int randomNodeIndex = Random.Range (0, _nodeConnectionDictionary.Count);
 		//Debug.Log (_nodeConnectionDictionary.Count);
 		KeyValuePair<double, IList<double>> selectedNode = _nodeConnectionDictionary.ElementAt (randomNodeIndex);
-		Debug.Log (selectedNode.Key);
-
+//		Debug.Log ("Drawing node "+selectedNode.Key+" and connections.");
 		DrawNode(selectedNode.Key);
 		foreach (double nID in selectedNode.Value.AsEnumerable()) {
-			Debug.Log(nID);
+			//Debug.Log(nID);
 			DrawNode(nID);
 		}
 	}
