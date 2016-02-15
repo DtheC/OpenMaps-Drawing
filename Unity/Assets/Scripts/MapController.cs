@@ -3,6 +3,7 @@ using System.Collections;
 using System.Xml;
 using System.Xml.Serialization;
 using System.Collections.Generic;
+using System.Linq;
 
 public class MapController : MonoBehaviour {
 	
@@ -39,7 +40,11 @@ public class MapController : MonoBehaviour {
 		InitNodeDictionary ();
 		InitWayDictionary ();
 		InitNodeConnectionDictionary ();
-		DrawNodes (_nodeDictionary);
+		//DrawNodes (_nodeDictionary);
+		DrawRandomNode ();
+		DrawRandomNode ();
+		DrawRandomNode ();
+		DrawRandomNode ();
 		DrawWays (_wayDictionary, _nodeDictionary);
 
 	}
@@ -48,17 +53,19 @@ public class MapController : MonoBehaviour {
 	void InitNodeConnectionDictionary(){
 		//Get a way node and look at the one next to it. THen find the first double in the connection
 		//dictionary and add the next and previous nodes to the list if not already added.
-		double fromNode = double.NaN;
-		double toNode = double.NaN;
+
 
 		foreach (IList<double> wayNode in _wayDictionary.Values) {
+			double fromNode = double.NaN;
+			double toNode = double.NaN;
 			for (int i = 0; i < wayNode.Count; i++) {
-				toNode = wayNode.IndexOf (i);
-				if (toNode == double.NaN) {
+				toNode = wayNode[i];
+				//Debug.Log(toNode);
+				if (double.IsNaN(toNode)) {
 					continue;
 				}
 				//Debug.Log ("To does not equal null!");
-				if (fromNode == double.NaN) {
+				if (double.IsNaN(fromNode)) {
 					fromNode = toNode;
 					continue;
 				}
@@ -82,8 +89,17 @@ public class MapController : MonoBehaviour {
 					newNodeList.Add (fromNode);
 					_nodeConnectionDictionary.Add (toNode, newNodeList);
 				}
+				fromNode = toNode;
 			}
 		}
+		//Debug writing
+//		foreach (KeyValuePair<double, IList<double>> kvp in _nodeConnectionDictionary)
+//		{
+//			//Debug.Log ("Number of npde connections: "+kvp.Value.Count);
+//			foreach(double f in kvp.Value){
+//				Debug.Log ("Key = "+kvp.Key+", Value = "+f);
+//			}
+//		}
 	}
 
 	void InitWayDictionary(){
@@ -183,6 +199,28 @@ public class MapController : MonoBehaviour {
 			}
 		}
 	}
+
+	void DrawRandomNode(){
+		int randomNodeIndex = Random.Range (0, _nodeConnectionDictionary.Count);
+		//Debug.Log (_nodeConnectionDictionary.Count);
+		KeyValuePair<double, IList<double>> selectedNode = _nodeConnectionDictionary.ElementAt (randomNodeIndex);
+//		Debug.Log ("Drawing node "+selectedNode.Key+" and connections.");
+		DrawNode(selectedNode.Key);
+		foreach (double nID in selectedNode.Value.AsEnumerable()) {
+			//Debug.Log(nID);
+			DrawNode(nID);
+		}
+	}
+
+	void DrawNode(double id){
+		float[] f = getNodeLatLonByID (id, _nodeDictionary);
+		if (f == null) {
+			return;
+		}
+		float Lat = MapMetaInformation.Instance.MapLatValue (f[0]);
+		float Lon = MapMetaInformation.Instance.MapLonValue (f[1]);
+		Instantiate (NodeObject, new Vector3 (Lat, 0, Lon), Quaternion.identity);
+	}
 	
 
 #endregion
@@ -195,7 +233,13 @@ public class MapController : MonoBehaviour {
 	/// <param name="id">Node Id</param>
 	/// <param name="nodes">Node Dictionary</param>
 	private float[] getNodeLatLonByID(double id, IDictionary<double, float[]> nodes) {
-		return nodes[id];
+		float[] r;
+		try {
+			r = nodes[id];	
+		} catch (System.Exception ex) {
+			return null;
+		}
+		return r;
 	}
 #endregion
 }
