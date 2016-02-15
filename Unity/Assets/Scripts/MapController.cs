@@ -57,7 +57,7 @@ public class MapController : MonoBehaviour {
 
 		foreach (IList<double> wayNode in _wayDictionary.Values) {
 			for (int i = 0; i < wayNode.Count; i++) {
-				toNode = wayNode.IndexOf (i);
+				toNode = wayNode[i];
 				if (toNode == double.NaN) {
 					continue;
 				}
@@ -88,6 +88,7 @@ public class MapController : MonoBehaviour {
 				}
 			}
 		}
+		Debug.Log (_nodeConnectionDictionary.Count);
 	}
 
 	void InitWayDictionary(){
@@ -190,13 +191,13 @@ public class MapController : MonoBehaviour {
 
 	void DrawRandomNode(){
 		int randomNodeIndex = Random.Range (0, _nodeConnectionDictionary.Count);
-		Debug.Log (_nodeConnectionDictionary.Count);
+		//Debug.Log (_nodeConnectionDictionary.Count);
 		KeyValuePair<double, IList<double>> selectedNode = _nodeConnectionDictionary.ElementAt (randomNodeIndex);
-		Debug.Log (selectedNode.Key);
+		//Debug.Log (selectedNode.Key);
 
 		DrawNode(selectedNode.Key);
 		foreach (double nID in selectedNode.Value) {
-			Debug.Log(nID);
+			//Debug.Log(nID);
 			DrawNode(nID);
 		}
 	}
