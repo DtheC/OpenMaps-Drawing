@@ -9,7 +9,9 @@ public class MapController : MonoBehaviour {
 	
 	[XmlAttribute("name")]
 	public string Name;
+	public bool DrawNodesToScreen = false;
 	public Transform NodeObject;
+	public bool DrawWaysToScreen = false;
 
 	private XmlDocument _mapXML;
 	private XmlNodeList _nodes;
@@ -40,13 +42,12 @@ public class MapController : MonoBehaviour {
 		InitNodeDictionary ();
 		InitWayDictionary ();
 		InitNodeConnectionDictionary ();
-		//DrawNodes (_nodeDictionary);
-		DrawRandomNode ();
-		DrawRandomNode ();
-		DrawRandomNode ();
-		DrawRandomNode ();
-		DrawWays (_wayDictionary, _nodeDictionary);
-
+		if (DrawNodesToScreen) {
+			DrawNodes (_nodeDictionary);
+		}
+		if (DrawWaysToScreen) {
+			DrawWays (_wayDictionary, _nodeDictionary);
+		}
 	}
 
 #region Init Functions
@@ -113,7 +114,6 @@ public class MapController : MonoBehaviour {
 					}
 				}
 			}
-			
 			if (isHighway) {
 				//If it is a highway then get all the nd references into a list then add the way id and the node refs into the wayDictionary
 				double wayId = double.Parse (w.Attributes.GetNamedItem ("id").Value);
@@ -241,5 +241,27 @@ public class MapController : MonoBehaviour {
 		}
 		return r;
 	}
+
+	public double GetRandomNodeId(){
+		int randomNodeIndex = Random.Range (0, _nodeConnectionDictionary.Count);
+		//Debug.Log (_nodeConnectionDictionary.Count);
+		KeyValuePair<double, IList<double>> selectedNode = _nodeConnectionDictionary.ElementAt (randomNodeIndex);
+		return selectedNode.Key;
+	}
+
+	public double GetRandomNodeConnectionId(double nodeID){
+		IList<double> selectedNode = _nodeConnectionDictionary [nodeID];
+		if (selectedNode == null) {
+			return double.NaN;
+		}
+		int randomNodeIndex = Random.Range (0, selectedNode.Count);
+		return selectedNode.ElementAt (randomNodeIndex);
+	}
+
+	public Vector3 GetNodePositionAsWorldCoordinateVector3(double _nodeID){
+		float[] _loc = getNodeLatLonByID (_nodeID, _nodeDictionary);
+		return new Vector3 (MapMetaInformation.Instance.MapLatValue (_loc [0]), 0, MapMetaInformation.Instance.MapLonValue (_loc [1]));
+	}
+
 #endregion
 }
