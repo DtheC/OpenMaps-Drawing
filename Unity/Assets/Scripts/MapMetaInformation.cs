@@ -3,8 +3,11 @@ using System.Collections;
 
 public class MapMetaInformation : MonoBehaviour {
 
-	public float MapWidth;
-	public float MapHeight;
+	private float MapWidth;
+	private float MapHeight;
+
+	public float OneLatitudeDegreeInUnits = 100;
+	public float OneLongitudeDegreeInUnits = 100;
 
 	private static MapMetaInformation m_Instance;
 	public static MapMetaInformation Instance { get
@@ -31,6 +34,10 @@ public class MapMetaInformation : MonoBehaviour {
 		_minLon = mlon;
 		_maxLon = xlon;
 		Debug.Log ("New meta values: " + _minLat + ", " + _maxLat + ", " + _minLon + ", " + _maxLon);
+
+		MapWidth = Mathf.Abs (_minLat - _maxLat) * OneLatitudeDegreeInUnits;
+		MapHeight = Mathf.Abs (_minLon - _maxLon) * OneLongitudeDegreeInUnits;
+
 	}
 
 	public float MapLonValue(float value){
