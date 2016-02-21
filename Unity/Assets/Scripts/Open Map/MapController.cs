@@ -224,15 +224,15 @@ public class MapController : MonoBehaviour {
 	}
 
 	public double GetRandomNodeId(){
-		int randomNodeIndex = Random.Range (0, _nodeConnectionDictionary.Count);
-		//Debug.Log (_nodeConnectionDictionary.Count);
-		KeyValuePair<double, IList<double>> selectedNode = _nodeConnectionDictionary.ElementAt (randomNodeIndex);
-		return selectedNode.Key;
+		int randomNodeIndex = Random.Range (0, _nodeList.Count);
+		double selectedNode = _nodeList [randomNodeIndex]._id;
+		return selectedNode;
 	}
 
+	//TODO Figure out how to change this? Is it needed or can we query a node object directly noe for a random neightbour?
 	public double GetRandomNodeConnectionId(double nodeID){
-		IList<double> selectedNode = _nodeConnectionDictionary [nodeID];
-		if (selectedNode == null) {
+		MapNode selected = GetMapNodeById (nodeID);
+		if (selected == null) {
 			return double.NaN;
 		}
 		int randomNodeIndex = Random.Range (0, selectedNode.Count);
