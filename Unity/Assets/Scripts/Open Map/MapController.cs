@@ -166,6 +166,7 @@ public class MapController : MonoBehaviour {
 			}
 			MapNode to = null;
 			MapNode from = null;
+			Color randomCol = new Color (Random.Range (0.00f, 1.00f),Random.Range (0.00f, 1.00f),Random.Range (0.00f, 1.00f));
 			for (int i=0; i < mapway._nodesInWay.Count; i++){
 				//Get nodes
 				to = GetMapNodeById(mapway._nodesInWay[i]);
@@ -176,7 +177,7 @@ public class MapController : MonoBehaviour {
 					from = to;
 					continue;
 				}
-				Debug.DrawLine(from.LocationInUnits, to.LocationInUnits, Color.green, 2000, false);
+				Debug.DrawLine(from.LocationInUnits, to.LocationInUnits, randomCol, 2000, false);
 			}
 		}
 	}
