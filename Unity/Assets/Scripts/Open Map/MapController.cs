@@ -26,6 +26,9 @@ public class MapController : MonoBehaviour {
 	private IDictionary<double, float[]> _nodeDictionary;
 	private IDictionary<double, IList<double>> _nodeConnectionDictionary;
 
+	private IList<MapWay> _wayList;
+	private IList<MapNode> _nodeList;
+
 	// Use this for initialization
 	void Start () {
 		_mapXML = new XmlDocument ();
@@ -34,6 +37,9 @@ public class MapController : MonoBehaviour {
 		_nodes = _mapXML.SelectNodes ("//node");
 		_ways = _mapXML.SelectNodes ("//way");
 
+		_wayList = new List<MapWay> ();
+		_nodeList = new List<MapNode> ();
+
 		_wayDictionary = new Dictionary<double, IList<double>> ();
 		_nodeDictionary = new Dictionary<double, float[]> ();
 		_nodeConnectionDictionary = new Dictionary<double, IList<double>> ();
@@ -41,7 +47,7 @@ public class MapController : MonoBehaviour {
 		InitWorldBounds ();
 		InitNodeDictionary ();
 		InitWayDictionary ();
-		InitNodeConnectionDictionary ();
+		InitNodeNeighbourLists ();
 		if (DrawNodesToScreen) {
 			DrawNodes (_nodeDictionary);
 		}
@@ -51,91 +57,64 @@ public class MapController : MonoBehaviour {
 	}
 
 #region Init Functions
-	void InitNodeConnectionDictionary(){
+	void InitNodeNeighbourLists(){
 		//Get a way node and look at the one next to it. THen find the first double in the connection
 		//dictionary and add the next and previous nodes to the list if not already added.
 
-
-		foreach (IList<double> wayNode in _wayDictionary.Values) {
+		foreach (MapWay _mapway in _wayList) {
 			double fromNode = double.NaN;
 			double toNode = double.NaN;
-			for (int i = 0; i < wayNode.Count; i++) {
-				toNode = wayNode[i];
-				//Debug.Log(toNode);
-				if (double.IsNaN(toNode)) {
+			for (int i = 0; i < _mapway._nodesInWay.Count; i++) {
+				toNode = _mapway._nodesInWay [i];
+				if (double.IsNaN (toNode)) {
 					continue;
 				}
-				//Debug.Log ("To does not equal null!");
-				if (double.IsNaN(fromNode)) {
+				if (double.IsNaN (fromNode)) {
 					fromNode = toNode;
 					continue;
 				}
-				//Adding to from -> to
-				if (_nodeConnectionDictionary.ContainsKey (fromNode)) {
-					if (!_nodeConnectionDictionary [fromNode].Contains (toNode)) {
-						_nodeConnectionDictionary [fromNode].Add (toNode);
-					}
-				} else {
-					IList<double> newNodeList = new List<double> ();
-					newNodeList.Add (toNode);
-					_nodeConnectionDictionary.Add (fromNode, newNodeList);
+
+				MapNode fromMapNode = GetMapNodeById (fromNode);
+				MapNode toMapNode = GetMapNodeById (toNode);
+				if (fromMapNode != null && toMapNode != null) {
+					fromMapNode.AddNeighbouringNode (toMapNode);
+					toMapNode.AddNeighbouringNode (fromMapNode);
 				}
-				//Adding to -> from
-				if (_nodeConnectionDictionary.ContainsKey (toNode)) {
-					if (!_nodeConnectionDictionary [toNode].Contains (fromNode)) {
-						_nodeConnectionDictionary [toNode].Add (fromNode);
-					}
-				} else {
-					IList<double> newNodeList = new List<double> ();
-					newNodeList.Add (fromNode);
-					_nodeConnectionDictionary.Add (toNode, newNodeList);
-				}
-				fromNode = toNode;
 			}
 		}
-		//Debug writing
-//		foreach (KeyValuePair<double, IList<double>> kvp in _nodeConnectionDictionary)
-//		{
-//			//Debug.Log ("Number of npde connections: "+kvp.Value.Count);
-//			foreach(double f in kvp.Value){
-//				Debug.Log ("Key = "+kvp.Key+", Value = "+f);
-//			}
-//		}
 	}
 
 	void InitWayDictionary(){
 		foreach (XmlNode w in _ways) {
-			bool isHighway = false;
-			//First check if this way has a highway tag.
-			foreach (XmlNode t in w.ChildNodes) {
-				if (t.Name == "tag") {
-					if (t.Attributes.GetNamedItem ("k").Value.ToString () == "highway") {
-						isHighway = true;
-					}
-				}
+			double wayId = double.Parse (w.Attributes.GetNamedItem ("id").Value);
+			IList<double> wayNodes = new List<double> ();
+			XmlNodeList nd = w.SelectNodes ("nd");
+			foreach (XmlNode wayNode in nd) {
+				wayNodes.Add (double.Parse (wayNode.Attributes.GetNamedItem ("ref").Value));
 			}
-			if (isHighway) {
-				//If it is a highway then get all the nd references into a list then add the way id and the node refs into the wayDictionary
-				double wayId = double.Parse (w.Attributes.GetNamedItem ("id").Value);
-				IList<double> wayNodes = new List<double> ();
-				//If is highway add it to the way Dictionary.
-				XmlNodeList nd = w.SelectNodes ("nd");
-				foreach (XmlNode wayNode in nd) {
-					wayNodes.Add (double.Parse (wayNode.Attributes.GetNamedItem ("ref").Value));
+			MapWay newWay = new MapWay(wayId);
+			newWay._nodesInWay = wayNodes;
+			_wayList.Add(newWay);
+
+			/*if (t.Name == "tag") {
+				if (t.Attributes.GetNamedItem ("k").Value.ToString () == "highway") { //TODO Get the tags and add them to the tags dict in the way object
+					isHighway = true;
 				}
-				_wayDictionary.Add (wayId, wayNodes);
-			}
+			}*/
+
 		}
-		Debug.Log ("Way dictionary initalised with " + _wayDictionary.Count + " items.");
+		Debug.Log ("Way dictionary initalised with " + _wayList.Count + " items.");
 	}
 
 	void InitNodeDictionary(){
 		foreach (XmlNode n in _nodes) {
 			float x = float.Parse (n.Attributes.GetNamedItem ("lat").Value);
 			float y = float.Parse (n.Attributes.GetNamedItem ("lon").Value);
-			_nodeDictionary.Add (double.Parse (n.Attributes.GetNamedItem ("id").Value), new float[] {x, y});
+			_nodeDictionary.Add (double.Parse (n.Attributes.GetNamedItem ("id").Value), new float[] {x, y}); //TODO Remove this line
+			MapNode _newNode = new MapNode(double.Parse (n.Attributes.GetNamedItem ("id").Value), x, y);
+			_nodeList.Add(_newNode);
 		}
-		Debug.Log ("Node dictionary initalised with " + _nodeDictionary.Count + " items.");
+		Debug.Log ("Node dictionary initalised with " + _nodeList.Count + " items.");
 	}
 
 	void InitWorldBounds(){
@@ -162,7 +141,7 @@ public class MapController : MonoBehaviour {
 #endregion
 
 #region Draw Functions
-
+	//TODO Fix this to work with new node objects
 	void DrawNodes(IDictionary<double, float[]> nodeDict){
 		foreach (float[] n in nodeDict.Values) {
 			float x = MapMetaInformation.Instance.MapLatValue (n[0]);
@@ -171,6 +150,7 @@ public class MapController : MonoBehaviour {
 		}
 	}
 
+	//TODO fix this to draw ways from the new way objects
 	void DrawWays(IDictionary<double, IList<double>> wayDict, IDictionary<double, float[]> nodeDict){
 		foreach (List<double> d in wayDict.Values) {
 			//Debug.Log ("Way contains "+d.Count+" nodes");
@@ -261,6 +241,20 @@ public class MapController : MonoBehaviour {
 	public Vector3 GetNodePositionAsWorldCoordinateVector3(double _nodeID){
 		float[] _loc = getNodeLatLonByID (_nodeID, _nodeDictionary);
 		return new Vector3 (MapMetaInformation.Instance.MapLatValue (_loc [0]), 0, MapMetaInformation.Instance.MapLonValue (_loc [1]));
+	}
+
+	/// <summary>
+	/// Gets the map node by identifier.
+	/// </summary>
+	/// <returns>The map node by identifier.</returns>
+	/// <param name="nodeId">Node identifier.</param>
+	public MapNode GetMapNodeById(double nodeId){
+		foreach (MapNode n in _nodeList) {
+			if (n._id == nodeId){
+				return n;
+			}
+		}
+		return null;
 	}
 
 #endregion
