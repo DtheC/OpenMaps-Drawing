@@ -45,14 +45,14 @@ public class MapController : MonoBehaviour {
 		_nodeConnectionDictionary = new Dictionary<double, IList<double>> ();
 
 		InitWorldBounds ();
-		InitNodeDictionary ();
-		InitWayDictionary ();
+		InitNodeList ();
+		InitWayList ();
 		InitNodeNeighbourLists ();
 		if (DrawNodesToScreen) {
 			DrawNodes (_nodeDictionary);
 		}
 		if (DrawWaysToScreen) {
-			DrawWays (_wayDictionary, _nodeDictionary);
+			DrawWays ();
 		}
 	}
 
@@ -84,7 +84,7 @@ public class MapController : MonoBehaviour {
 		}
 	}
 
-	void InitWayDictionary(){
+	void InitWayList(){
 		foreach (XmlNode w in _ways) {
 			double wayId = double.Parse (w.Attributes.GetNamedItem ("id").Value);
 			IList<double> wayNodes = new List<double> ();
@@ -106,12 +106,13 @@ public class MapController : MonoBehaviour {
 		Debug.Log ("Way dictionary initalised with " + _wayList.Count + " items.");
 	}
 
-	void InitNodeDictionary(){
+	void InitNodeList(){
 		foreach (XmlNode n in _nodes) {
 			float x = float.Parse (n.Attributes.GetNamedItem ("lat").Value);
 			float y = float.Parse (n.Attributes.GetNamedItem ("lon").Value);
 			_nodeDictionary.Add (double.Parse (n.Attributes.GetNamedItem ("id").Value), new float[] {x, y}); //TODO Remove this line
 			MapNode _newNode = new MapNode(double.Parse (n.Attributes.GetNamedItem ("id").Value), x, y);
+			_newNode.updateUnitLocationVectors();
 			_nodeList.Add(_newNode);
 		}
 		Debug.Log ("Node dictionary initalised with " + _nodeList.Count + " items.");
@@ -149,33 +150,22 @@ public class MapController : MonoBehaviour {
 			Instantiate (NodeObject, new Vector3 (x, 0, y), Quaternion.identity);
 		}
 	}
-
-	//TODO fix this to draw ways from the new way objects
-	void DrawWays(IDictionary<double, IList<double>> wayDict, IDictionary<double, float[]> nodeDict){
-		foreach (List<double> d in wayDict.Values) {
-			//Debug.Log ("Way contains "+d.Count+" nodes");
-			float[] to = null;
-			float[] from = null;
-			for (int i = 0; i < d.Count; i++){
-				to = getNodeLatLonByID(d[i], nodeDict);
-
-				if (to == null) {
+	
+	void DrawWays(){
+		foreach (MapWay mapway in _wayList) {
+			MapNode to = null;
+			MapNode from = null;
+			for (int i=0; i < mapway._nodesInWay.Count; i++){
+				//Get nodes
+				to = GetMapNodeById(mapway._nodesInWay[i]);
+				if (to == null){
 					continue;
 				}
-				//Debug.Log ("To does not equal null!");
-				if (from == null) {
+				if (from == null){
 					from = to;
 					continue;
 				}
-				//Debug.Log ("From does not equal null!");
-
-				float fromLat = MapMetaInformation.Instance.MapLatValue (from[0]);
-				float fromLon = MapMetaInformation.Instance.MapLonValue (from[1]);
-
-				float toLat = MapMetaInformation.Instance.MapLatValue (to[0]);
-				float toLon = MapMetaInformation.Instance.MapLonValue (to[1]);
-
-				Debug.DrawLine (new Vector3 (fromLat, 0, fromLon), new Vector3 (toLat, 0, toLon),Color.green, 2000, false);
+				Debug.DrawLine(from._locationInUnits, to._locationInUnits, Color.green, 2000, false);
 			}
 		}
 	}

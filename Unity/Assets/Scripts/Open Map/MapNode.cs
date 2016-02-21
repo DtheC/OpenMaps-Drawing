@@ -21,7 +21,7 @@ public class MapNode {
 		_tags = null;
 	}
 
-	void updateUnitLocationVectors(){
+	public void updateUnitLocationVectors(){
 		_locationInUnits = new Vector3(MapMetaInformation.Instance.MapLatValue(_lat), 0, MapMetaInformation.Instance.MapLonValue(_lon));
 	}
 
