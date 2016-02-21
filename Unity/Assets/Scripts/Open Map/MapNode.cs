@@ -11,7 +11,19 @@ public class MapNode {
 
 	public IList<MapNode> _connectedNodes { get; set; }
 
-	public Vector3 _locationInUnits {get; set;}
+	private Vector3 _locationInUnits;
+	public Vector3 LocationInUnits 
+	{
+		get {
+			if (_locationInUnits == null) {
+				updateUnitLocationVectors ();
+			}
+			return _locationInUnits;
+			}
+
+		set { _locationInUnits = value; }
+	}
+
 	
 	public MapNode(double id, float lat, float lon){
 		_id = id;
@@ -22,7 +34,7 @@ public class MapNode {
 	}
 
 	public void updateUnitLocationVectors(){
-		_locationInUnits = new Vector3(MapMetaInformation.Instance.MapLatValue(_lat), 0, MapMetaInformation.Instance.MapLonValue(_lon));
+		LocationInUnits = new Vector3(MapMetaInformation.Instance.MapLatValue(_lat), 0, MapMetaInformation.Instance.MapLonValue(_lon));
 	}
 
 	public void AddNeighbouringNode(MapNode neighbour){
@@ -36,5 +48,12 @@ public class MapNode {
 			}
 		}
 		_connectedNodes.Add (neighbour);
+	}
+
+	public MapNode GetRandomNeighbour(){
+		if (_connectedNodes != null){
+			return _connectedNodes[Random.Range(0, _connectedNodes.Count)];
+		}
+		return null;
 	}
 }

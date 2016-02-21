@@ -176,7 +176,7 @@ public class MapController : MonoBehaviour {
 					from = to;
 					continue;
 				}
-				Debug.DrawLine(from._locationInUnits, to._locationInUnits, Color.green, 2000, false);
+				Debug.DrawLine(from.LocationInUnits, to.LocationInUnits, Color.green, 2000, false);
 			}
 		}
 	}
@@ -223,20 +223,14 @@ public class MapController : MonoBehaviour {
 		return r;
 	}
 
+	public MapNode GetRandomNode(){
+		return _nodeList [Random.Range (0, _nodeList.Count)];
+	}
+
 	public double GetRandomNodeId(){
 		int randomNodeIndex = Random.Range (0, _nodeList.Count);
 		double selectedNode = _nodeList [randomNodeIndex]._id;
 		return selectedNode;
-	}
-
-	//TODO Figure out how to change this? Is it needed or can we query a node object directly noe for a random neightbour?
-	public double GetRandomNodeConnectionId(double nodeID){
-		MapNode selected = GetMapNodeById (nodeID);
-		if (selected == null) {
-			return double.NaN;
-		}
-		int randomNodeIndex = Random.Range (0, selectedNode.Count);
-		return selectedNode.ElementAt (randomNodeIndex);
 	}
 
 	public Vector3 GetNodePositionAsWorldCoordinateVector3(double _nodeID){
