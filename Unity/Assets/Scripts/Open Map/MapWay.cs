@@ -14,4 +14,17 @@ public class MapWay {
 		_tags = null;
 	}
 
+	public void LogTags(){
+		foreach (KeyValuePair <string,IList<string>> k in _tags){
+			string output = "";
+			output += k + ": { ";
+			foreach (string v in k.Value){
+				output += v + " ,";
+			}
+			output += " }";
+			Debug.Log (output);
+		}
+
+	}
+
 }

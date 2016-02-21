@@ -12,6 +12,7 @@ public class MapController : MonoBehaviour {
 	public bool DrawNodesToScreen = false;
 	public Transform NodeObject;
 	public bool DrawWaysToScreen = false;
+	public bool OnlyDrawHighways = true;
 
 	private XmlDocument _mapXML;
 	private XmlNodeList _nodes;
@@ -92,16 +93,21 @@ public class MapController : MonoBehaviour {
 			foreach (XmlNode wayNode in nd) {
 				wayNodes.Add (double.Parse (wayNode.Attributes.GetNamedItem ("ref").Value));
 			}
+			nd = w.SelectNodes ("tag");
+			IDictionary<string, IList<string>> wayTags = new Dictionary<string, IList<string>>();
+			foreach (XmlNode aTag in nd) {
+				string kValue = aTag.Attributes.GetNamedItem("k").Value;
+				string vValue = aTag.Attributes.GetNamedItem("v").Value;
+				if (!wayTags.ContainsKey(kValue)){
+					wayTags[kValue] = new List<string>();
+				}
+				wayTags[kValue].Add(vValue);
+			}
+
 			MapWay newWay = new MapWay(wayId);
 			newWay._nodesInWay = wayNodes;
+			newWay._tags = wayTags;
 			_wayList.Add(newWay);
-
-			/*if (t.Name == "tag") {
-				if (t.Attributes.GetNamedItem ("k").Value.ToString () == "highway") { //TODO Get the tags and add them to the tags dict in the way object
-					isHighway = true;
-				}
-			}*/
-
 		}
 		Debug.Log ("Way dictionary initalised with " + _wayList.Count + " items.");
 	}
@@ -153,6 +159,11 @@ public class MapController : MonoBehaviour {
 	
 	void DrawWays(){
 		foreach (MapWay mapway in _wayList) {
+			if (OnlyDrawHighways){
+				if (!mapway._tags.ContainsKey("highway")){
+					continue;
+				}
+			}
 			MapNode to = null;
 			MapNode from = null;
 			for (int i=0; i < mapway._nodesInWay.Count; i++){
