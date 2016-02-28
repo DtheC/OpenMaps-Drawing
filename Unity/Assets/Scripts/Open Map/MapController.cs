@@ -109,7 +109,6 @@ public class MapController : MonoBehaviour {
 			newWay._tags = wayTags;
 			_wayList.Add(newWay);
 		}
-		Debug.Log ("Way dictionary initalised with " + _wayList.Count + " items.");
 	}
 
 	void InitNodeList(){
@@ -178,6 +177,7 @@ public class MapController : MonoBehaviour {
 					continue;
 				}
 				Debug.DrawLine(from.LocationInUnits, to.LocationInUnits, randomCol, 2000, false);
+				from = to;
 			}
 		}
 	}
