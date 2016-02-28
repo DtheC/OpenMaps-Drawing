@@ -29,20 +29,33 @@ public class MapMetaInformation : MonoBehaviour {
 	}
 
 	public void SetMetaValues(float mlat, float xlat, float mlon, float xlon){
-		_minLat = mlat;
-		_maxLat = xlat;
-		_minLon = mlon;
-		_maxLon = xlon;
+
+		if (mlat < xlat) {
+			_minLat = mlat;
+			_maxLat = xlat;
+		} else {
+			_minLat = xlat;
+			_maxLat = mlat;
+		}
+
+		if (mlon > xlon) {
+			_minLon = mlon;
+			_maxLon = xlon;
+		} else {
+			_minLon = xlon;
+			_maxLon = mlon;
+		}
+	
 		Debug.Log ("New meta values: " + _minLat + ", " + _maxLat + ", " + _minLon + ", " + _maxLon);
 
-		MapWidth = Mathf.Abs (_minLat - _maxLat) * OneLatitudeDegreeInUnits;
-		MapHeight = Mathf.Abs (_minLon - _maxLon) * OneLongitudeDegreeInUnits;
+		MapWidth = Mathf.Abs(_minLat - _maxLat) * OneLatitudeDegreeInUnits;
+		MapHeight = Mathf.Abs(_minLon - _maxLon) * OneLongitudeDegreeInUnits;
 
 	}
 
 	public float MapLonValue(float value){
 
-		return (value - _minLon) * (MapHeight - 0) / (_maxLon - _minLon) + 0;
+		return (value - _minLon) * (MapHeight - 0.0f) / (_maxLon - _minLon) + 0.0f;
 //		float R = (Mathf.Abs (_maxLon) - Mathf.Abs(_minLon)) / (MapHeight - 0);
 //		return (value - 0) * (R + Mathf.Abs (_minLon));
 
@@ -50,7 +63,7 @@ public class MapMetaInformation : MonoBehaviour {
 	}
 
 	public float MapLatValue(float value){
-		return (value - _minLat) * (MapWidth - 0) / (_maxLat - _minLat) + 0;
+		return (value - _minLat) * (MapWidth - 0.0f) / (_maxLat - _minLat) + 0.0f;
 		//return (Mathf.Abs(value) * Mathf.Abs(Mathf.Abs (_maxLat) - Mathf.Abs(_minLat))) * MapWidth;
 	}
 	
