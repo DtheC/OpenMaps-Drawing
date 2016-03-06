@@ -28,6 +28,12 @@ public class MapController : MonoBehaviour {
 	private IDictionary<double, IList<double>> _nodeConnectionDictionary;
 
 	private IList<MapWay> _wayList;
+	public IList<MapWay> WayList {
+		get {
+			return _wayList;
+		}
+	}
+
 	private IList<MapNode> _nodeList;
 
 	// Use this for initialization
@@ -86,6 +92,7 @@ public class MapController : MonoBehaviour {
 	}
 
 	void InitWayList(){
+		IList<MapWay> _tempWayList = new List<MapWay>();
 		foreach (XmlNode w in _ways) {
 			double wayId = double.Parse (w.Attributes.GetNamedItem ("id").Value);
 			IList<double> wayNodes = new List<double> ();
@@ -107,8 +114,9 @@ public class MapController : MonoBehaviour {
 			MapWay newWay = new MapWay(wayId);
 			newWay._nodesInWay = wayNodes;
 			newWay._tags = wayTags;
-			_wayList.Add(newWay);
+			_tempWayList.Add(newWay);
 		}
+		_wayList = _tempWayList;
 	}
 
 	void InitNodeList(){

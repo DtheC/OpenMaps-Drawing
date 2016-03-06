@@ -13,14 +13,16 @@ public class WayTracer : MonoBehaviour
 	public float speedOfMovement = 0.1f;
 
 	private MapController _mapController;
+	private WayTracerEmitter _parentEmitter;
 	private float _countTowardFutureLocation;
 
 	private MapNode _currentMapNode;
 	private MapNode _travellingToMapNode;
 
-	public void Init (MapController _m)
+	public void Init (MapController _m, WayTracerEmitter _w)
 	{
 		_mapController = _m;
+		_parentEmitter = _w;
 		_countTowardFutureLocation = 0;
 
 		_currentMapNode = null;
@@ -50,7 +52,8 @@ public class WayTracer : MonoBehaviour
 
 	void GetRandomStartingNode ()
 	{
-		_currentMapNode = _mapController.GetRandomNode ();
+		_currentMapNode = _parentEmitter.GetRandomRoadNode ();
+		//_currentMapNode = _mapController.GetRandomNode ();
 	}
 
 	void GetNextConnection ()
