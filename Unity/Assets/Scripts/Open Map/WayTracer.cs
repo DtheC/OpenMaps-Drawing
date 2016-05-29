@@ -1,13 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-
-//SO currently these follow any neightbour of the current node which means they can move along
-//ways that we may not want them to. What we need to do instead is set certain variable on the tracer (at this stage, can travel on highways only)
-//Then we move between nodes on a way and when we hit a new node we check that node's neighbours for ones which match our abilities.
-//So maybe what we actually need to do it set MapNodes to have a tag list as well of what they can do. Can we check for the ways that are assocaited with
-//a given node and see which are highways? 
-
 public class WayTracer : MonoBehaviour
 {
 	public float speedOfMovement = 0.1f;
