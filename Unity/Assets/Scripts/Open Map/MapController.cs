@@ -14,6 +14,8 @@ public class MapController : MonoBehaviour {
 	public bool DrawWaysToScreen = false;
 	public bool OnlyDrawHighways = true;
 
+	public NodeDrawer _nodeDrawer;
+
 	private XmlDocument _mapXML;
 	private XmlNodeList _nodes;
 	private XmlNodeList _ways;
@@ -35,6 +37,8 @@ public class MapController : MonoBehaviour {
 	}
 
 	private IList<MapNode> _nodeList;
+
+
 
 	// Use this for initialization
 	void Start () {
@@ -61,6 +65,7 @@ public class MapController : MonoBehaviour {
 		if (DrawWaysToScreen) {
 			DrawWays ();
 		}
+		_nodeDrawer.DrawNodes (_nodeList);
 	}
 
 #region Init Functions
@@ -126,6 +131,19 @@ public class MapController : MonoBehaviour {
 			_nodeDictionary.Add (double.Parse (n.Attributes.GetNamedItem ("id").Value), new float[] {x, y}); //TODO Remove this line
 			MapNode _newNode = new MapNode(double.Parse (n.Attributes.GetNamedItem ("id").Value), x, y);
 			_newNode.updateUnitLocationVectors();
+
+			//Get the tag list of the node
+			XmlNodeList nd = n.SelectNodes ("tag");
+			IDictionary<string, IList<string>> nodeTags = new Dictionary<string, IList<string>>();
+			foreach (XmlNode aTag in nd) {
+				string kValue = aTag.Attributes.GetNamedItem("k").Value;
+				string vValue = aTag.Attributes.GetNamedItem("v").Value;
+				if (!nodeTags.ContainsKey(kValue)){
+					nodeTags[kValue] = new List<string>();
+				}
+				nodeTags[kValue].Add(vValue);
+			}
+			_newNode._tags = nodeTags;
 			_nodeList.Add(_newNode);
 		}
 		Debug.Log ("Node dictionary initalised with " + _nodeList.Count + " items.");
