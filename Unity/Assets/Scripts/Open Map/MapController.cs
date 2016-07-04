@@ -59,12 +59,18 @@ public class MapController : MonoBehaviour {
 		InitNodeList ();
 		InitWayList ();
 		InitNodeNeighbourLists ();
+
+		foreach (MapNode m in _nodeList) {
+			m.LogNeighbourNodes();
+		}
+
 		if (DrawNodesToScreen) {
 			DrawNodes (_nodeDictionary);
 		}
 		if (DrawWaysToScreen) {
 			DrawWays ();
 		}
+
 		_nodeDrawer.DrawNodes (_nodeList);
 	}
 
@@ -74,25 +80,27 @@ public class MapController : MonoBehaviour {
 		//dictionary and add the next and previous nodes to the list if not already added.
 
 		foreach (MapWay _mapway in _wayList) {
-			double fromNode = double.NaN;
-			double toNode = double.NaN;
+			MapNode fromNode = null;
+			MapNode toNode = null;
 			for (int i = 0; i < _mapway._nodesInWay.Count; i++) {
 				toNode = _mapway._nodesInWay [i];
-				if (double.IsNaN (toNode)) {
+				if (toNode == null) {
 					continue;
 				}
-				if (double.IsNaN (fromNode)) {
+				if (fromNode == null) {
 					fromNode = toNode;
 					continue;
 				}
 
-				MapNode fromMapNode = GetMapNodeById (fromNode);
-				MapNode toMapNode = GetMapNodeById (toNode);
-				if (fromMapNode != null && toMapNode != null) {
-					fromMapNode.AddNeighbouringNode (toMapNode);
-					toMapNode.AddNeighbouringNode (fromMapNode);
+				//MapNode fromMapNode = GetMapNodeById (fromNode);
+				//MapNode toMapNode = GetMapNodeById (toNode);
+				if (fromNode != null && toNode != null) {
+					fromNode.AddNeighbouringNode (toNode);
+					toNode.AddNeighbouringNode (fromNode);
+					fromNode = toNode;
 				}
 			}
+			_mapway.LogWayNodes();
 		}
 	}
 
@@ -100,10 +108,13 @@ public class MapController : MonoBehaviour {
 		IList<MapWay> _tempWayList = new List<MapWay>();
 		foreach (XmlNode w in _ways) {
 			double wayId = double.Parse (w.Attributes.GetNamedItem ("id").Value);
-			IList<double> wayNodes = new List<double> ();
+			IList<MapNode> wayNodes = new List<MapNode> ();
 			XmlNodeList nd = w.SelectNodes ("nd");
 			foreach (XmlNode wayNode in nd) {
-				wayNodes.Add (double.Parse (wayNode.Attributes.GetNamedItem ("ref").Value));
+				MapNode nextNode = GetMapNodeById(double.Parse (wayNode.Attributes.GetNamedItem ("ref").Value));
+				if (nextNode != null){
+					wayNodes.Add (nextNode);
+				}
 			}
 			nd = w.SelectNodes ("tag");
 			IDictionary<string, IList<string>> wayTags = new Dictionary<string, IList<string>>();
@@ -128,7 +139,7 @@ public class MapController : MonoBehaviour {
 		foreach (XmlNode n in _nodes) {
 			float x = float.Parse (n.Attributes.GetNamedItem ("lat").Value);
 			float y = float.Parse (n.Attributes.GetNamedItem ("lon").Value);
-			_nodeDictionary.Add (double.Parse (n.Attributes.GetNamedItem ("id").Value), new float[] {x, y}); //TODO Remove this line
+			_nodeDictionary.Add (double.Parse (n.Attributes.GetNamedItem ("id").Value), new float[] {x, y}); //TODO Remove this line || Figure out what this todo means and build a time machine to kick past Travis for the vague todo.
 			MapNode _newNode = new MapNode(double.Parse (n.Attributes.GetNamedItem ("id").Value), x, y);
 			_newNode.updateUnitLocationVectors();
 
@@ -194,7 +205,7 @@ public class MapController : MonoBehaviour {
 			Color randomCol = new Color (Random.Range (0.00f, 1.00f),Random.Range (0.00f, 1.00f),Random.Range (0.00f, 1.00f));
 			for (int i=0; i < mapway._nodesInWay.Count; i++){
 				//Get nodes
-				to = GetMapNodeById(mapway._nodesInWay[i]);
+				to = GetMapNodeById(mapway._nodesInWay[i]._id);
 				if (to == null){
 					continue;
 				}

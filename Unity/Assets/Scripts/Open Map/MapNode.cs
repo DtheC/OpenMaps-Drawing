@@ -52,8 +52,19 @@ public class MapNode {
 
 	public MapNode GetRandomNeighbour(){
 		if (_connectedNodes != null){
-			return _connectedNodes[Random.Range(0, _connectedNodes.Count)];
+			System.Random rnd = new System.Random();
+			int i = rnd.Next(_connectedNodes.Count);
+			return _connectedNodes[i];
 		}
 		return null;
+	}
+
+	public void LogNeighbourNodes(){
+		string output = "";
+		output += _id + ": ";
+		foreach (MapNode d in _connectedNodes) {
+			output += d._id + ", ";
+		}
+		Debug.Log (output);
 	}
 }

@@ -3,20 +3,23 @@ using System.Collections;
 
 public class WayTracer : MonoBehaviour
 {
-	public float speedOfMovement = 0.1f;
+	public float speedOfMovement = 2.0f;
+	public float triggerDistance = 0.1f;
 
 	private MapController _mapController;
 	private WayTracerEmitter _parentEmitter;
-	private float _countTowardFutureLocation;
 
 	private MapNode _currentMapNode;
 	private MapNode _travellingToMapNode;
+
+	[SerializeField] 
+	private double _currentMapNodeId;
+	private double _travellingToMapNodeId;
 
 	public void Init (MapController _m, WayTracerEmitter _w)
 	{
 		_mapController = _m;
 		_parentEmitter = _w;
-		_countTowardFutureLocation = 0;
 
 		_currentMapNode = null;
 		_travellingToMapNode = null;
@@ -30,29 +33,38 @@ public class WayTracer : MonoBehaviour
 	void Update ()
 	{
 			MoveTowardNewLocation ();
-			if (_countTowardFutureLocation >= 1) {
-				_countTowardFutureLocation = 0;
-				_currentMapNode = _travellingToMapNode;
-				GetNextConnection ();
-			}
+			if (Vector3.Distance (transform.position, _travellingToMapNode.LocationInUnits) < triggerDistance) {
+			_currentMapNode = _travellingToMapNode;
+			GetNextConnection();
+		}
 	}
 
 	void MoveTowardNewLocation ()
 	{
-		transform.position = Vector3.Lerp (_currentMapNode.LocationInUnits, _travellingToMapNode.LocationInUnits, _countTowardFutureLocation);
-		_countTowardFutureLocation += speedOfMovement;
+		float step = speedOfMovement * Time.deltaTime;
+		transform.position = Vector3.MoveTowards (transform.position, _travellingToMapNode.LocationInUnits, step);
+		//transform.position = Vector3.Lerp (_currentMapNode.LocationInUnits, _travellingToMapNode.LocationInUnits, _countTowardFutureLocation);
+		//_countTowardFutureLocation += speedOfMovement;
 	}
 
 	void GetRandomStartingNode ()
 	{
 		_currentMapNode = _parentEmitter.GetRandomRoadNode ();
+		if (_currentMapNode != null) {
+			_currentMapNodeId = _currentMapNode._id;
+		}
 		//_currentMapNode = _mapController.GetRandomNode ();
 	}
 
 	void GetNextConnection ()
 	{
 		_travellingToMapNode = _currentMapNode.GetRandomNeighbour ();
-		if (_travellingToMapNode == null) {
+
+		Debug.Assert (_travellingToMapNode != null);
+
+		if (_travellingToMapNode != null) {
+			_travellingToMapNodeId = _travellingToMapNode._id;
+		} else {
 			_travellingToMapNode = _currentMapNode;
 		}
 	}
