@@ -43,8 +43,6 @@ public class WayTracer : MonoBehaviour
 	{
 		float step = speedOfMovement * Time.deltaTime;
 		transform.position = Vector3.MoveTowards (transform.position, _travellingToMapNode.LocationInUnits, step);
-		//transform.position = Vector3.Lerp (_currentMapNode.LocationInUnits, _travellingToMapNode.LocationInUnits, _countTowardFutureLocation);
-		//_countTowardFutureLocation += speedOfMovement;
 	}
 
 	void GetRandomStartingNode ()
@@ -53,7 +51,6 @@ public class WayTracer : MonoBehaviour
 		if (_currentMapNode != null) {
 			_currentMapNodeId = _currentMapNode._id;
 		}
-		//_currentMapNode = _mapController.GetRandomNode ();
 	}
 
 	void GetNextConnection ()

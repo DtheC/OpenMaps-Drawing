@@ -33,7 +33,6 @@ public class MapWay {
 			output += " }";
 			Debug.Log (output);
 		}
-
 	}
 
 }
