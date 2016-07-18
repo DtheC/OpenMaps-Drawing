@@ -60,9 +60,9 @@ public class MapController : MonoBehaviour {
 		InitWayList ();
 		InitNodeNeighbourLists ();
 
-		foreach (MapNode m in _nodeList) {
-			m.LogNeighbourNodes();
-		}
+		//foreach (MapNode m in _nodeList) {
+		//	m.LogNeighbourNodes();
+		//}
 
 		if (DrawNodesToScreen) {
 			MapDrawer.DrawNodes (_nodeDictionary);
@@ -71,7 +71,7 @@ public class MapController : MonoBehaviour {
 			MapDrawer.DrawWays (_wayList);
 		}
 
-		NodeDrawer.DrawNodes (_nodeList);
+		//NodeDrawer.DrawNodes (_nodeList);
 	}
 
 #region Init Functions

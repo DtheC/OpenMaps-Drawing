@@ -5,11 +5,18 @@ using System.Collections.Generic;
 public class MapDrawer : MonoBehaviour {
 
 	public Transform NodeObject;
-
 	public bool OnlyDrawHighways = true;
 
-	private MapController _mapController;
+	public Mesh WayMesh;
 
+	private IList<GameObject> _wayMeshes;
+	public IList<GameObject> WayMeshes {
+		get {
+			return _wayMeshes;
+		}
+	}
+
+	private MapController _mapController;
 	public MapController MapController {
 		get {
 			return _mapController;
@@ -17,6 +24,10 @@ public class MapDrawer : MonoBehaviour {
 		set {
 			_mapController = value;
 		}
+	}
+
+	void Start(){
+		_wayMeshes = new List<GameObject> ();
 	}
 
 	public void DrawNodes(IDictionary<double, float[]> nodeDict){
@@ -28,6 +39,10 @@ public class MapDrawer : MonoBehaviour {
 	}
 
 	public void DrawWays(IList<MapWay> wayList){
+		//Create MeshBuilder 
+		MeshBuilder meshBuilder = new MeshBuilder();
+		int currentTriangleCount = 0;
+
 		foreach (MapWay mapway in wayList) {
 			if (OnlyDrawHighways){
 				if (!mapway._tags.ContainsKey("highway")){
@@ -48,8 +63,74 @@ public class MapDrawer : MonoBehaviour {
 					continue;
 				}
 				Debug.DrawLine(from.LocationInUnits, to.LocationInUnits, randomCol, 2000, false);
+
+				//Draw Mesh
+
+				var turning = Quaternion.FromToRotation (from.LocationInUnits, to.LocationInUnits);
+				var turnRight = Quaternion.FromToRotation(Vector3.forward, Vector3.right);
+
+				Vector3 x3 = new Vector3 (
+					(float) to.LocationInUnits.x + (float) 0.577*(from.LocationInUnits.y-to.LocationInUnits.y),
+					0,
+					to.LocationInUnits.y + (float) 0.577*(to.LocationInUnits.x - from.LocationInUnits.x)
+				);
+
+				meshBuilder.Vertices.Add(from.LocationInUnits + turning*from.LocationInUnits.normalized);
+				meshBuilder.UVs.Add(new Vector2(0.0f, 0.0f));
+				meshBuilder.Normals.Add(Vector3.up);
+
+				meshBuilder.Vertices.Add(from.LocationInUnits);
+				meshBuilder.UVs.Add(new Vector2(0.0f, 1.0f));
+				meshBuilder.Normals.Add(Vector3.up);
+
+				meshBuilder.Vertices.Add(to.LocationInUnits + turning*from.LocationInUnits.normalized);
+				meshBuilder.UVs.Add(new Vector2(1.0f, 1.0f));
+				meshBuilder.Normals.Add(Vector3.up);
+
+				meshBuilder.Vertices.Add(to.LocationInUnits);
+				meshBuilder.UVs.Add(new Vector2(1.0f, 0.0f));
+				meshBuilder.Normals.Add(Vector3.up);
+
+
+				//Add the triangles:
+				meshBuilder.AddTriangle(currentTriangleCount, currentTriangleCount+1, currentTriangleCount+2);
+				meshBuilder.AddTriangle(currentTriangleCount, currentTriangleCount+2, currentTriangleCount+3);
+				currentTriangleCount+=4;
+
+				/*
+				GameObject newWay = new GameObject();
+				newWay.AddComponent<MeshRenderer> ();
+				MeshFilter WayMesh = newWay.AddComponent<MeshFilter> ();
+				WayMesh.mesh = this.WayMesh;
+
+				//This code rotates, positions and scales the cube mesh correctly.
+				//Original code from: http://answers.unity3d.com/questions/613373/rotating-an-object-between-2-points.html#comment-613408
+				Vector3 dir = to.LocationInUnits - from.LocationInUnits;
+				Vector3 mid = (dir) / 2.0f + from.LocationInUnits;
+				newWay.transform.position = mid;
+				newWay.transform.rotation = Quaternion.FromToRotation(Vector3.up, dir);
+				Vector3 scale = transform.localScale;
+				scale.y = dir.magnitude * 1.0f;
+				scale.x = 0.5f;
+				scale.z = 0.5f;
+				newWay.transform.localScale = scale;
+
+				_wayMeshes.Add (newWay);
+				*/
 				from = to;
 			}
+		}
+		//Create the mesh:
+		Mesh mesh = meshBuilder.CreateMesh();
+
+		//Look for a MeshFilter component attached to this GameObject:
+		MeshFilter filter = GetComponent<MeshFilter>();
+
+		//If the MeshFilter exists, attach the new mesh to it.
+		//Assuming the GameObject also has a renderer attached, our new mesh will now be visible in the scene.
+		if (filter != null)
+		{
+			filter.sharedMesh = mesh;
 		}
 	}
 
