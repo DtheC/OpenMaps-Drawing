@@ -100,7 +100,7 @@ public class MapController : MonoBehaviour {
 					fromNode = toNode;
 				}
 			}
-			_mapway.LogWayNodes();
+			//_mapway.LogWayNodes();
 		}
 	}
 

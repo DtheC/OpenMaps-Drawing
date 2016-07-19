@@ -9,6 +9,8 @@ public class MapDrawer : MonoBehaviour {
 
 	public Mesh WayMesh;
 
+	public Material MapMaterial;
+
 	public float RoadWidth = 0.5f;
 
 	private IList<GameObject> _wayMeshes;
@@ -92,11 +94,11 @@ public class MapDrawer : MonoBehaviour {
 				//);
 
 				meshBuilder.Vertices.Add(e);
-				meshBuilder.UVs.Add(new Vector2(0.0f, 1.0f));
+				meshBuilder.UVs.Add(new Vector2(0.0f, 0.0f));
 				meshBuilder.Normals.Add(Vector3.up);
 
 				meshBuilder.Vertices.Add(f);
-				meshBuilder.UVs.Add(new Vector2(0.0f, 0.0f));
+				meshBuilder.UVs.Add(new Vector2(1.0f, 0.0f));
 				meshBuilder.Normals.Add(Vector3.up);
 
 				meshBuilder.Vertices.Add(d);
@@ -104,7 +106,7 @@ public class MapDrawer : MonoBehaviour {
 				meshBuilder.Normals.Add(Vector3.up);
 
 				meshBuilder.Vertices.Add(c);
-				meshBuilder.UVs.Add(new Vector2(1.0f, 0.0f));
+				meshBuilder.UVs.Add(new Vector2(0.0f, 1.0f));
 				meshBuilder.Normals.Add(Vector3.up);
 
 
@@ -147,7 +149,23 @@ public class MapDrawer : MonoBehaviour {
 		if (filter != null)
 		{
 			filter.sharedMesh = mesh;
+			GetComponent<MeshRenderer> ().material = MapMaterial;
 		}
+
+		ColourMesh ();
+	}
+
+	void ColourMesh(){
+		Mesh mesh = GetComponent<MeshFilter>().mesh;
+		Vector3[] vertices = mesh.vertices;
+		Color[] colors = new Color[vertices.Length];
+		Debug.Log (vertices.Length);
+		int i = 0;
+		while (i < vertices.Length) {
+			colors[i] = Color.Lerp(Color.red, Color.green, vertices[i].y);
+			i++;
+		}
+		mesh.colors = colors;
 	}
 
 //	void DrawRandomNode(){

@@ -7,6 +7,8 @@ public class testdraw : MonoBehaviour {
 	public Vector3 a;
 	public Vector3 b;
 
+	public Transform shower;
+
 	// Use this for initialization
 	void Start () {
 		Color randomCol = new Color (Random.Range (0.00f, 1.00f),Random.Range (0.00f, 1.00f),Random.Range (0.00f, 1.00f));
@@ -46,7 +48,7 @@ public class testdraw : MonoBehaviour {
 		Vector3 e = 1 * newVector + b;
 		Vector3 f = -1 * newVector + b;
 
-
+		Instantiate (shower, d, Quaternion.identity);
 
 
 		Debug.DrawLine(a, b, randomCol, 2000, false);
