@@ -43,6 +43,9 @@ public class MapDrawer : MonoBehaviour {
 	}
 
 	public void DrawWays(IList<MapWay> wayList){
+
+		List<Color32> colours = new List<Color32>();
+
 		//Create MeshBuilder 
 		MeshBuilder meshBuilder = new MeshBuilder();
 		int currentTriangleCount = 0;
@@ -109,6 +112,14 @@ public class MapDrawer : MonoBehaviour {
 				meshBuilder.UVs.Add(new Vector2(0.0f, 1.0f));
 				meshBuilder.Normals.Add(Vector3.up);
 
+				Color32 ddd = new Color32 ((byte)Random.Range (0, 255), (byte)Random.Range (0, 255), (byte)Random.Range (0, 255), 255); 
+
+				colours.Add (ddd);
+				colours.Add (ddd);
+				ddd = new Color32 ((byte)Random.Range (0, 255), (byte)Random.Range (0, 255), (byte)Random.Range (0, 255), 255); 
+				colours.Add (ddd);
+				colours.Add (ddd);
+
 
 				//Add the triangles:
 				meshBuilder.AddTriangle(currentTriangleCount, currentTriangleCount+1, currentTriangleCount+2);
@@ -152,17 +163,17 @@ public class MapDrawer : MonoBehaviour {
 			GetComponent<MeshRenderer> ().material = MapMaterial;
 		}
 
-		ColourMesh ();
+		ColourMesh (colours);
 	}
 
-	void ColourMesh(){
+	void ColourMesh(List<Color32> cols){
 		Mesh mesh = GetComponent<MeshFilter>().mesh;
 		Vector3[] vertices = mesh.vertices;
 		Color[] colors = new Color[vertices.Length];
 		Debug.Log (vertices.Length);
 		int i = 0;
 		while (i < vertices.Length) {
-			colors[i] = Color.Lerp(Color.red, Color.green, vertices[i].y);
+			colors [i] = cols [i];
 			i++;
 		}
 		mesh.colors = colors;
