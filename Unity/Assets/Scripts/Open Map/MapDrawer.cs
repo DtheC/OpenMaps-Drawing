@@ -9,6 +9,8 @@ public class MapDrawer : MonoBehaviour {
 
 	public Mesh WayMesh;
 
+	public float RoadWidth = 0.5f;
+
 	private IList<GameObject> _wayMeshes;
 	public IList<GameObject> WayMeshes {
 		get {
@@ -51,7 +53,7 @@ public class MapDrawer : MonoBehaviour {
 			}
 			MapNode to = null;
 			MapNode from = null;
-			Color randomCol = new Color (Random.Range (0.00f, 1.00f),Random.Range (0.00f, 1.00f),Random.Range (0.00f, 1.00f));
+			//Color randomCol = new Color (Random.Range (0.00f, 1.00f),Random.Range (0.00f, 1.00f),Random.Range (0.00f, 1.00f));
 			for (int i=0; i < mapway._nodesInWay.Count; i++){
 				//Get nodes
 				to = _mapController.GetMapNodeById(mapway._nodesInWay[i]._id);
@@ -62,32 +64,46 @@ public class MapDrawer : MonoBehaviour {
 					from = to;
 					continue;
 				}
-				Debug.DrawLine(from.LocationInUnits, to.LocationInUnits, randomCol, 2000, false);
+				//Debug.DrawLine(from.LocationInUnits, to.LocationInUnits, randomCol, 2000, false);
 
 				//Draw Mesh
 
-				var turning = Quaternion.FromToRotation (from.LocationInUnits, to.LocationInUnits);
-				var turnRight = Quaternion.FromToRotation(Vector3.forward, Vector3.right);
+				Vector3 newVec = to.LocationInUnits - from.LocationInUnits;
+				Vector3 newVector = Vector3.Cross (newVec, Vector3.down);
+				newVector.Normalize ();
 
-				Vector3 x3 = new Vector3 (
-					(float) to.LocationInUnits.x + (float) 0.577*(from.LocationInUnits.y-to.LocationInUnits.y),
-					0,
-					to.LocationInUnits.y + (float) 0.577*(to.LocationInUnits.x - from.LocationInUnits.x)
-				);
+				Vector3 c = RoadWidth * newVector + to.LocationInUnits;
+				Vector3 d = -RoadWidth * newVector + to.LocationInUnits;
 
-				meshBuilder.Vertices.Add(from.LocationInUnits + turning*from.LocationInUnits.normalized);
-				meshBuilder.UVs.Add(new Vector2(0.0f, 0.0f));
-				meshBuilder.Normals.Add(Vector3.up);
+				Vector3 e = RoadWidth * newVector + from.LocationInUnits;
+				Vector3 f = -RoadWidth * newVector + from.LocationInUnits;
 
-				meshBuilder.Vertices.Add(from.LocationInUnits);
+				//float toAngle = Vector3.Angle (to.LocationInUnits, from.LocationInUnits) - 90;
+				//Vector3 rotatedTo = Quaternion.Euler (0, toAngle, 0) * to.LocationInUnits;
+				//Vector3 rotatedFrom = Quaternion.Euler (0, toAngle, 0) * from.LocationInUnits;
+
+				//var turning = Quaternion.FromToRotation (from.LocationInUnits, to.LocationInUnits);
+				//var turnRight = Quaternion.FromToRotation(Vector3.forward, Vector3.right);
+
+				//Vector3 x3 = new Vector3 (
+				//	(float) to.LocationInUnits.x + (float) 0.577*(from.LocationInUnits.y-to.LocationInUnits.y),
+				//	0,
+				//	to.LocationInUnits.y + (float) 0.577*(to.LocationInUnits.x - from.LocationInUnits.x)
+				//);
+
+				meshBuilder.Vertices.Add(e);
 				meshBuilder.UVs.Add(new Vector2(0.0f, 1.0f));
 				meshBuilder.Normals.Add(Vector3.up);
 
-				meshBuilder.Vertices.Add(to.LocationInUnits + turning*from.LocationInUnits.normalized);
+				meshBuilder.Vertices.Add(f);
+				meshBuilder.UVs.Add(new Vector2(0.0f, 0.0f));
+				meshBuilder.Normals.Add(Vector3.up);
+
+				meshBuilder.Vertices.Add(d);
 				meshBuilder.UVs.Add(new Vector2(1.0f, 1.0f));
 				meshBuilder.Normals.Add(Vector3.up);
 
-				meshBuilder.Vertices.Add(to.LocationInUnits);
+				meshBuilder.Vertices.Add(c);
 				meshBuilder.UVs.Add(new Vector2(1.0f, 0.0f));
 				meshBuilder.Normals.Add(Vector3.up);
 
