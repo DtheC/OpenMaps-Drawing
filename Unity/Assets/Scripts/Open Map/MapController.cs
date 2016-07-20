@@ -155,7 +155,10 @@ public class MapController : MonoBehaviour {
 				nodeTags[kValue].Add(vValue);
 			}
 			_newNode._tags = nodeTags;
+			_newNode.SetWaterBasedOnTags ();
+			_newNode.SetFoodBasedOnTags ();
 			_nodeList.Add(_newNode);
+			//_newNode.LogTags ("ater");
 		}
 		Debug.Log ("Node dictionary initalised with " + _nodeList.Count + " items.");
 	}

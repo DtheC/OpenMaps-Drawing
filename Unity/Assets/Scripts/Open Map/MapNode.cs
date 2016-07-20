@@ -11,6 +11,9 @@ public class MapNode {
 
 	public IList<MapNode> _connectedNodes { get; set; }
 
+	public float AmountOfWater = 0;
+	public float AmountOfFood = 0;
+
 	private Vector3? _locationInUnits;
 	public Vector3 LocationInUnits 
 	{
@@ -24,7 +27,6 @@ public class MapNode {
 		set { _locationInUnits = value; }
 	}
 
-	
 	public MapNode(double id, float lat, float lon){
 		_id = id;
 		_lat = lat;
@@ -50,6 +52,28 @@ public class MapNode {
 		_connectedNodes.Add (neighbour);
 	}
 
+	public void SetWaterBasedOnTags(){
+		AmountOfWater = 0f;
+		foreach (KeyValuePair<string, IList<string>> entry in _tags) {
+			foreach (string v in entry.Value) {
+				if (v.Contains ("drinking_water")) {
+					AmountOfWater = 1.0f;
+				}
+			}
+		}
+	}
+
+	public void SetFoodBasedOnTags(){
+		AmountOfFood = 0f;
+		foreach (KeyValuePair<string, IList<string>> entry in _tags) {
+			foreach (string v in entry.Value) {
+				if (v.Contains ("restaurant")) {
+					AmountOfFood = 1.0f;
+				}
+			}
+		}
+	}
+
 	public MapNode GetRandomNeighbour(){
 		if (_connectedNodes != null){
 			System.Random rnd = new System.Random();
@@ -57,6 +81,24 @@ public class MapNode {
 			return _connectedNodes[i];
 		}
 		return null;
+	}
+
+	public void LogTags(){
+		foreach (KeyValuePair<string, IList<string>> entry in _tags) {
+			foreach (string v in entry.Value) {
+				Debug.Log (entry.Key + ": " + v);
+			}
+		}
+	}
+
+	public void LogTags(string searchterm){
+		foreach (KeyValuePair<string, IList<string>> entry in _tags) {
+			foreach (string v in entry.Value) {
+				if (entry.Key.Contains (searchterm) || v.Contains (searchterm)) {
+					Debug.Log (entry.Key + ": " + v);
+				}
+			}
+		}
 	}
 
 	public void LogNeighbourNodes(){

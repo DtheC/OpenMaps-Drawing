@@ -103,15 +103,17 @@ public class MapDrawer : MonoBehaviour {
 
 				byte red = (byte) ((from.LocationInUnits.z / MapMetaInformation.Instance.MapWidth)*255);
 				byte green = (byte) ((from.LocationInUnits.x / MapMetaInformation.Instance.MapHeight)*255);
+				byte blue = (byte) (from.AmountOfFood * 255);
 
-				Color32 ddd = new Color32 (red, green, 0, 255); 
+				Color32 ddd = new Color32 (0, 20, blue, 255); 
 				colours.Add (ddd);
 				colours.Add (ddd);
 
 				red = (byte) ((to.LocationInUnits.z / MapMetaInformation.Instance.MapWidth)*255);
 				green = (byte) ((to.LocationInUnits.x / MapMetaInformation.Instance.MapHeight)*255);
+				blue = (byte) (to.AmountOfFood * 255);
 
-				ddd = new Color32 (red, green, 0, 255); 
+				ddd = new Color32 (0, 20, blue, 255); 
 				colours.Add (ddd);
 				colours.Add (ddd);
 
