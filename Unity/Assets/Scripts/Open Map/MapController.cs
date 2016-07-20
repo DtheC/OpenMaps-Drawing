@@ -27,10 +27,6 @@ public class MapController : MonoBehaviour {
 	private float _minLon = float.MaxValue;
 	private float _maxLat = float.MaxValue;
 	private float _maxLon = float.MaxValue;
-	
-	private IDictionary<double, IList<double>> _wayDictionary;
-	private IDictionary<double, float[]> _nodeDictionary;
-	private IDictionary<double, IList<double>> _nodeConnectionDictionary;
 
 	private IList<MapWay> _wayList;
 	public IList<MapWay> WayList {
@@ -53,10 +49,6 @@ public class MapController : MonoBehaviour {
 		_wayList = new List<MapWay> ();
 		_nodeList = new List<MapNode> ();
 
-		_wayDictionary = new Dictionary<double, IList<double>> ();
-		_nodeDictionary = new Dictionary<double, float[]> ();
-		_nodeConnectionDictionary = new Dictionary<double, IList<double>> ();
-
 		InitWorldBounds ();
 		InitNodeList ();
 		InitWayList ();
@@ -68,7 +60,7 @@ public class MapController : MonoBehaviour {
 		//}
 
 		if (DrawNodesToScreen) {
-			MapDrawer.DrawNodes (_nodeDictionary);
+		//	MapDrawer.DrawNodes (_nodeDictionary);
 		}
 		if (DrawWaysToScreen) {
 			MapDrawer.DrawWays (_wayList);
@@ -153,7 +145,6 @@ public class MapController : MonoBehaviour {
 		foreach (XmlNode n in _nodes) {
 			float x = float.Parse (n.Attributes.GetNamedItem ("lat").Value);
 			float y = float.Parse (n.Attributes.GetNamedItem ("lon").Value);
-			_nodeDictionary.Add (double.Parse (n.Attributes.GetNamedItem ("id").Value), new float[] {x, y}); //TODO Remove this line || Figure out what this todo means and build a time machine to kick past Travis for the vague todo.
 			MapNode _newNode = new MapNode(double.Parse (n.Attributes.GetNamedItem ("id").Value), x, y);
 			_newNode.updateUnitLocationVectors();
 
@@ -232,12 +223,7 @@ public class MapController : MonoBehaviour {
 		double selectedNode = _nodeList [randomNodeIndex]._id;
 		return selectedNode;
 	}
-
-	public Vector3 GetNodePositionAsWorldCoordinateVector3(double _nodeID){
-		float[] _loc = getNodeLatLonByID (_nodeID, _nodeDictionary);
-		return new Vector3 (MapMetaInformation.Instance.MapLatValue (_loc [0]), 0, MapMetaInformation.Instance.MapLonValue (_loc [1]));
-	}
-
+		
 	/// <summary>
 	/// Gets the map node by identifier.
 	/// </summary>
