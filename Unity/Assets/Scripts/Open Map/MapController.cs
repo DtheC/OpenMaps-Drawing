@@ -17,6 +17,8 @@ public class MapController : MonoBehaviour {
 	public NodeDrawer NodeDrawer;
 	public MapDrawer MapDrawer;
 
+	public float NeedPropogationRange = 10.0f;
+
 	private XmlDocument _mapXML;
 	private XmlNodeList _nodes;
 	private XmlNodeList _ways;
@@ -59,6 +61,7 @@ public class MapController : MonoBehaviour {
 		InitNodeList ();
 		InitWayList ();
 		InitNodeNeighbourLists ();
+		PropogateNeedsToNeighbours ();
 
 		//foreach (MapNode m in _nodeList) {
 		//	m.LogNeighbourNodes();
@@ -75,6 +78,17 @@ public class MapController : MonoBehaviour {
 	}
 
 #region Init Functions
+
+	//TODO Make this propogate less or more depending on the distance from the node to the neighbour
+	void PropogateNeedsToNeighbours(){
+		foreach (MapNode n in _nodeList) {
+			IList<MapNode> nodes = GetNodesInRange (n, NeedPropogationRange);
+			foreach (MapNode neighbour in nodes) {
+				neighbour.PropogateNeedsToNeighbours (n.AmountOfFood);
+			}
+		}
+	}
+
 	void InitNodeNeighbourLists(){
 		//Get a way node and look at the one next to it. THen find the first double in the connection
 		//dictionary and add the next and previous nodes to the list if not already added.
@@ -236,6 +250,19 @@ public class MapController : MonoBehaviour {
 			}
 		}
 		return null;
+	}
+
+	public IList<MapNode> GetNodesInRange(MapNode node, float range){
+		IList<MapNode> nodes = new List<MapNode> ();
+		foreach (MapNode otherNode in _nodeList){
+			//Check this isn't the current node to avoid duplication
+			if (node._id != otherNode._id) {
+				if (Vector3.Distance (node.LocationInUnits, otherNode.LocationInUnits) < range) {
+					nodes.Add (otherNode);
+				}
+			}
+		}
+		return nodes;
 	}
 
 #endregion

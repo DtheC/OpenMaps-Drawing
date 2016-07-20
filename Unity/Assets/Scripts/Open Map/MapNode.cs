@@ -13,6 +13,7 @@ public class MapNode {
 
 	public float AmountOfWater = 0;
 	public float AmountOfFood = 0;
+	public float NearbyAmountOfFood = 0;
 
 	private Vector3? _locationInUnits;
 	public Vector3 LocationInUnits 
@@ -52,6 +53,23 @@ public class MapNode {
 		_connectedNodes.Add (neighbour);
 	}
 
+
+	public void PropogateNeedsToNeighbours(){
+		if (_connectedNodes != null) {
+			foreach (MapNode neighbour in _connectedNodes) {
+				neighbour.PropogateNeedsToNeighbours (AmountOfFood);
+			}
+		}
+	}
+
+	//TODO This should recieve a dictionary of Needs and assocaited values rather than just food
+	public void PropogateNeedsToNeighbours(float topropogate){
+		NearbyAmountOfFood += topropogate / 10.0f;
+		if (NearbyAmountOfFood+AmountOfFood > 1.0f){
+			NearbyAmountOfFood = 1.0f-AmountOfFood;
+		}
+	}
+
 	public void SetWaterBasedOnTags(){
 		AmountOfWater = 0f;
 		foreach (KeyValuePair<string, IList<string>> entry in _tags) {
@@ -67,7 +85,7 @@ public class MapNode {
 		AmountOfFood = 0f;
 		foreach (KeyValuePair<string, IList<string>> entry in _tags) {
 			foreach (string v in entry.Value) {
-				if (v.Contains ("restaurant")) {
+				if (v.Contains ("restaurant") || entry.Key.Contains("amenity")) {
 					AmountOfFood = 1.0f;
 				}
 			}

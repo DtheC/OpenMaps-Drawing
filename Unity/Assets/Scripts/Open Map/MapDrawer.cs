@@ -56,6 +56,7 @@ public class MapDrawer : MonoBehaviour {
 					continue;
 				}
 			}
+
 			MapNode to = null;
 			MapNode from = null;
 			//Color randomCol = new Color (Random.Range (0.00f, 1.00f),Random.Range (0.00f, 1.00f),Random.Range (0.00f, 1.00f));
@@ -72,7 +73,6 @@ public class MapDrawer : MonoBehaviour {
 				//Debug.DrawLine(from.LocationInUnits, to.LocationInUnits, randomCol, 2000, false);
 
 				//Draw Mesh
-
 				Vector3 newVec = to.LocationInUnits - from.LocationInUnits;
 				Vector3 newVector = Vector3.Cross (newVec, Vector3.down);
 				newVector.Normalize ();
@@ -84,7 +84,6 @@ public class MapDrawer : MonoBehaviour {
 				Vector3 f = -RoadWidth * newVector + from.LocationInUnits;
 
 				//MeshBuilder from http://jayelinda.com/
-
 				meshBuilder.Vertices.Add(e);
 				meshBuilder.UVs.Add(new Vector2(0.0f, 0.0f));
 				meshBuilder.Normals.Add(Vector3.up);
@@ -103,15 +102,15 @@ public class MapDrawer : MonoBehaviour {
 
 				byte red = (byte) ((from.LocationInUnits.z / MapMetaInformation.Instance.MapWidth)*255);
 				byte green = (byte) ((from.LocationInUnits.x / MapMetaInformation.Instance.MapHeight)*255);
-				byte blue = (byte) (from.AmountOfFood * 255);
+				byte blue = (byte) ((from.AmountOfFood+from.NearbyAmountOfFood) * 255);
 
-				Color32 ddd = new Color32 (0, 20, blue, 255); 
+				Color32 ddd = new Color32 (0, 20, blue, 255);
 				colours.Add (ddd);
 				colours.Add (ddd);
 
 				red = (byte) ((to.LocationInUnits.z / MapMetaInformation.Instance.MapWidth)*255);
 				green = (byte) ((to.LocationInUnits.x / MapMetaInformation.Instance.MapHeight)*255);
-				blue = (byte) (to.AmountOfFood * 255);
+				blue = (byte) ((from.AmountOfFood+from.NearbyAmountOfFood) * 255);
 
 				ddd = new Color32 (0, 20, blue, 255); 
 				colours.Add (ddd);
