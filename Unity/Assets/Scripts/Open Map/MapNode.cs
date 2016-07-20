@@ -11,14 +11,14 @@ public class MapNode {
 
 	public IList<MapNode> _connectedNodes { get; set; }
 
-	private Vector3 _locationInUnits;
+	private Vector3? _locationInUnits;
 	public Vector3 LocationInUnits 
 	{
 		get {
-			if (_locationInUnits == null) {
+			if (!_locationInUnits.HasValue) {
 				updateUnitLocationVectors ();
 			}
-			return _locationInUnits;
+			return (Vector3) _locationInUnits;
 			}
 
 		set { _locationInUnits = value; }
