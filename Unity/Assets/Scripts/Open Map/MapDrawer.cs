@@ -83,18 +83,7 @@ public class MapDrawer : MonoBehaviour {
 				Vector3 e = RoadWidth * newVector + from.LocationInUnits;
 				Vector3 f = -RoadWidth * newVector + from.LocationInUnits;
 
-				//float toAngle = Vector3.Angle (to.LocationInUnits, from.LocationInUnits) - 90;
-				//Vector3 rotatedTo = Quaternion.Euler (0, toAngle, 0) * to.LocationInUnits;
-				//Vector3 rotatedFrom = Quaternion.Euler (0, toAngle, 0) * from.LocationInUnits;
-
-				//var turning = Quaternion.FromToRotation (from.LocationInUnits, to.LocationInUnits);
-				//var turnRight = Quaternion.FromToRotation(Vector3.forward, Vector3.right);
-
-				//Vector3 x3 = new Vector3 (
-				//	(float) to.LocationInUnits.x + (float) 0.577*(from.LocationInUnits.y-to.LocationInUnits.y),
-				//	0,
-				//	to.LocationInUnits.y + (float) 0.577*(to.LocationInUnits.x - from.LocationInUnits.x)
-				//);
+				//MeshBuilder from http://jayelinda.com/
 
 				meshBuilder.Vertices.Add(e);
 				meshBuilder.UVs.Add(new Vector2(0.0f, 0.0f));
@@ -112,40 +101,25 @@ public class MapDrawer : MonoBehaviour {
 				meshBuilder.UVs.Add(new Vector2(0.0f, 1.0f));
 				meshBuilder.Normals.Add(Vector3.up);
 
-				Color32 ddd = new Color32 ((byte)Random.Range (0, 255), (byte)Random.Range (0, 255), (byte)Random.Range (0, 255), 255); 
+				byte red = (byte) ((from.LocationInUnits.z / MapMetaInformation.Instance.MapWidth)*255);
+				byte green = (byte) ((from.LocationInUnits.x / MapMetaInformation.Instance.MapHeight)*255);
 
-				colours.Add (ddd);
-				colours.Add (ddd);
-				ddd = new Color32 ((byte)Random.Range (0, 255), (byte)Random.Range (0, 255), (byte)Random.Range (0, 255), 255); 
+				Color32 ddd = new Color32 (red, green, 0, 255); 
 				colours.Add (ddd);
 				colours.Add (ddd);
 
+				red = (byte) ((to.LocationInUnits.z / MapMetaInformation.Instance.MapWidth)*255);
+				green = (byte) ((to.LocationInUnits.x / MapMetaInformation.Instance.MapHeight)*255);
+
+				ddd = new Color32 (red, green, 0, 255); 
+				colours.Add (ddd);
+				colours.Add (ddd);
 
 				//Add the triangles:
 				meshBuilder.AddTriangle(currentTriangleCount, currentTriangleCount+1, currentTriangleCount+2);
 				meshBuilder.AddTriangle(currentTriangleCount, currentTriangleCount+2, currentTriangleCount+3);
 				currentTriangleCount+=4;
 
-				/*
-				GameObject newWay = new GameObject();
-				newWay.AddComponent<MeshRenderer> ();
-				MeshFilter WayMesh = newWay.AddComponent<MeshFilter> ();
-				WayMesh.mesh = this.WayMesh;
-
-				//This code rotates, positions and scales the cube mesh correctly.
-				//Original code from: http://answers.unity3d.com/questions/613373/rotating-an-object-between-2-points.html#comment-613408
-				Vector3 dir = to.LocationInUnits - from.LocationInUnits;
-				Vector3 mid = (dir) / 2.0f + from.LocationInUnits;
-				newWay.transform.position = mid;
-				newWay.transform.rotation = Quaternion.FromToRotation(Vector3.up, dir);
-				Vector3 scale = transform.localScale;
-				scale.y = dir.magnitude * 1.0f;
-				scale.x = 0.5f;
-				scale.z = 0.5f;
-				newWay.transform.localScale = scale;
-
-				_wayMeshes.Add (newWay);
-				*/
 				from = to;
 			}
 		}

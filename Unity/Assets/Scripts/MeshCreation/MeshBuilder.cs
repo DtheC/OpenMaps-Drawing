@@ -4,6 +4,7 @@ using System.Collections.Generic;
 
 /// <summary>
 /// Class for holding all the data needed for a mesh in progress.
+/// This class is taken from: http://jayelinda.com/ and the great mesh building tutorials contained therein
 /// </summary>
 public class MeshBuilder
 {

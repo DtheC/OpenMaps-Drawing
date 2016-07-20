@@ -3,8 +3,21 @@ using System.Collections;
 
 public class MapMetaInformation : MonoBehaviour {
 
-	private float MapWidth;
-	private float MapHeight;
+	private float _mapWidth;
+
+	public float MapWidth {
+		get {
+			return _mapWidth;
+		}
+	}
+
+	private float _mapHeight;
+
+	public float MapHeight {
+		get {
+			return _mapHeight;
+		}
+	}
 
 	public float OneLatitudeDegreeInUnits = 100;
 	public float OneLongitudeDegreeInUnits = 100;
@@ -19,10 +32,37 @@ public class MapMetaInformation : MonoBehaviour {
 			return m_Instance;
 		}}
 	
-	private float _minLat { get; set; }
-	private float _minLon { get; set; }
-	private float _maxLat { get; set; }
-	private float _maxLon { get; set; }
+	private float _minLat;
+
+	public float MinLat {
+		get {
+			return _minLat;
+		}
+	}
+
+	private float _minLon;
+
+	public float MinLon {
+		get {
+			return _minLon;
+		}
+	}
+
+	private float _maxLat;
+
+	public float MaxLat {
+		get {
+			return _maxLat;
+		}
+	}
+
+	private float _maxLon;
+
+	public float MaxLon {
+		get {
+			return _maxLon;
+		}
+	}
 
 	void Awake() {
 		m_Instance = this;
@@ -48,14 +88,14 @@ public class MapMetaInformation : MonoBehaviour {
 	
 		Debug.Log ("New meta values: " + _minLat + ", " + _maxLat + ", " + _minLon + ", " + _maxLon);
 
-		MapWidth = Mathf.Abs(_minLat - _maxLat) * OneLatitudeDegreeInUnits;
-		MapHeight = Mathf.Abs(_minLon - _maxLon) * OneLongitudeDegreeInUnits;
+		_mapWidth = Mathf.Abs(_minLat - _maxLat) * OneLatitudeDegreeInUnits;
+		_mapHeight = Mathf.Abs(_minLon - _maxLon) * OneLongitudeDegreeInUnits;
 
 	}
 
 	public float MapLonValue(float value){
 
-		return (value - _minLon) * (MapHeight - 0.0f) / (_maxLon - _minLon) + 0.0f;
+		return (value - _minLon) * (_mapHeight - 0.0f) / (_maxLon - _minLon) + 0.0f;
 //		float R = (Mathf.Abs (_maxLon) - Mathf.Abs(_minLon)) / (MapHeight - 0);
 //		return (value - 0) * (R + Mathf.Abs (_minLon));
 
@@ -63,7 +103,7 @@ public class MapMetaInformation : MonoBehaviour {
 	}
 
 	public float MapLatValue(float value){
-		return (value - _minLat) * (MapWidth - 0.0f) / (_maxLat - _minLat) + 0.0f;
+		return (value - _minLat) * (_mapWidth - 0.0f) / (_maxLat - _minLat) + 0.0f;
 		//return (Mathf.Abs(value) * Mathf.Abs(Mathf.Abs (_maxLat) - Mathf.Abs(_minLat))) * MapWidth;
 	}
 	
