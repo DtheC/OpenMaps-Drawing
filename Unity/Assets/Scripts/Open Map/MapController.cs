@@ -12,8 +12,6 @@ public class MapController : MonoBehaviour {
 
 	public bool DrawNodesToScreen = false;
 	public Transform NodeObject;
-	public bool DrawWaysToScreen = false;
-	public bool OnlyDrawHighways = true;
 
 	public NodeDrawer NodeDrawer;
 	public MapDrawer MapDrawer;
@@ -63,9 +61,8 @@ public class MapController : MonoBehaviour {
 		if (DrawNodesToScreen) {
 		//	MapDrawer.DrawNodes (_nodeDictionary);
 		}
-		if (DrawWaysToScreen) {
+
 			MapDrawer.DrawWays (_wayList);
-		}
 
 		//NodeDrawer.DrawNodes (_nodeList);
 	}

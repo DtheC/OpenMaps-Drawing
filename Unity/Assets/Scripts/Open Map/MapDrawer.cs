@@ -5,6 +5,7 @@ using System.Collections.Generic;
 public class MapDrawer : MonoBehaviour {
 
 	public Transform NodeObject;
+	public bool DrawWaysToScreen = true;
 	public bool OnlyDrawHighways = true;
 
 	public Mesh WayMesh;
@@ -43,7 +44,9 @@ public class MapDrawer : MonoBehaviour {
 	}
 
 	public void DrawWays(IList<MapWay> wayList){
-
+		if (!DrawWaysToScreen) {
+			return;
+		}
 		List<Color32> colours = new List<Color32>();
 
 		//Create MeshBuilder 
