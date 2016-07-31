@@ -8,7 +8,8 @@ using System.Linq;
 public class MapController : MonoBehaviour {
 	
 	[XmlAttribute("name")]
-	public string Name;
+	public TextAsset Name;
+
 	public bool DrawNodesToScreen = false;
 	public Transform NodeObject;
 	public bool DrawWaysToScreen = false;
@@ -39,7 +40,7 @@ public class MapController : MonoBehaviour {
 
 	void Start () {
 		_mapXML = new XmlDocument ();
-		_mapXML.Load (Name);
+		_mapXML.LoadXml (Name.ToString());
 
 		MapDrawer.MapController = this;
 		
