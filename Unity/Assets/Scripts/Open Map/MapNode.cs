@@ -64,7 +64,7 @@ public class MapNode {
 
 	//TODO This should recieve a dictionary of Needs and assocaited values rather than just food
 	public void PropogateNeedsToNeighbours(float topropogate){
-		NearbyAmountOfFood += topropogate / 10.0f;
+		NearbyAmountOfFood += topropogate; 
 		if (NearbyAmountOfFood+AmountOfFood > 1.0f){
 			NearbyAmountOfFood = 1.0f-AmountOfFood;
 		}
@@ -85,8 +85,9 @@ public class MapNode {
 		AmountOfFood = 0f;
 		foreach (KeyValuePair<string, IList<string>> entry in _tags) {
 			foreach (string v in entry.Value) {
-				if (v.Contains ("restaurant") || entry.Key.Contains("amenity")) {
-					AmountOfFood = 1.0f;
+				if (v.Contains ("restaurant")) {
+					AmountOfFood = 0.1f;
+
 				}
 			}
 		}

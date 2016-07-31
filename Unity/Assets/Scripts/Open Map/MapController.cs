@@ -69,12 +69,15 @@ public class MapController : MonoBehaviour {
 
 #region Init Functions
 
-	//TODO Make this propogate less or more depending on the distance from the node to the neighbour
+	/// <summary>
+	/// Propogates the needs to neighbour nodes.
+	/// </summary>
 	void PropogateNeedsToNeighbours(){
 		foreach (MapNode n in _nodeList) {
-			IList<MapNode> nodes = GetNodesInRange (n, NeedPropogationRange);
-			foreach (MapNode neighbour in nodes) {
-				neighbour.PropogateNeedsToNeighbours (n.AmountOfFood);
+			IDictionary<MapNode, float> nodes = GetNodesInRange (n, NeedPropogationRange);
+			foreach (KeyValuePair<MapNode, float> neighbour in nodes) {
+				float foodAmount = (neighbour.Value/NeedPropogationRange)*n.AmountOfFood;
+				neighbour.Key.PropogateNeedsToNeighbours (foodAmount);
 			}
 		}
 	}
@@ -236,13 +239,14 @@ public class MapController : MonoBehaviour {
 		return null;
 	}
 
-	public IList<MapNode> GetNodesInRange(MapNode node, float range){
-		IList<MapNode> nodes = new List<MapNode> ();
+	public IDictionary<MapNode, float> GetNodesInRange(MapNode node, float range){
+		IDictionary<MapNode, float> nodes = new Dictionary<MapNode, float> ();
 		foreach (MapNode otherNode in _nodeList){
 			//Check this isn't the current node to avoid duplication
 			if (node._id != otherNode._id) {
-				if (Vector3.Distance (node.LocationInUnits, otherNode.LocationInUnits) < range) {
-					nodes.Add (otherNode);
+				float dist = Vector3.Distance (node.LocationInUnits, otherNode.LocationInUnits);
+				if (dist < range) {
+					nodes.Add (otherNode, dist);
 				}
 			}
 		}
