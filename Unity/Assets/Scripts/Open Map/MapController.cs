@@ -16,7 +16,7 @@ public class MapController : MonoBehaviour {
 	public NodeDrawer NodeDrawer;
 	public MapDrawer MapDrawer;
 
-	public float NeedPropogationRange = 10.0f;
+	public float NeedPropogationRange = 0.1f;
 
 	private XmlDocument _mapXML;
 	private XmlNodeList _nodes;
@@ -76,8 +76,13 @@ public class MapController : MonoBehaviour {
 		foreach (MapNode n in _nodeList) {
 			IDictionary<MapNode, float> nodes = GetNodesInRange (n, NeedPropogationRange);
 			foreach (KeyValuePair<MapNode, float> neighbour in nodes) {
+
 				float foodAmount = (neighbour.Value/NeedPropogationRange)*n.AmountOfFood;
 				neighbour.Key.PropogateNeedsToNeighbours (foodAmount);
+
+				neighbour.Key.AddToNeed (Needs.Food, neighbour.Value/NeedPropogationRange); //Divide by the NeedPropogationRange to get a value between 0 and 1
+				//neighbour.PropogateNeedsToNeighbours (n.AmountOfFood);
+
 			}
 		}
 	}
@@ -247,6 +252,9 @@ public class MapController : MonoBehaviour {
 				float dist = Vector3.Distance (node.LocationInUnits, otherNode.LocationInUnits);
 				if (dist < range) {
 					nodes.Add (otherNode, dist);
+
+					KeyValuePair<MapNode, float> otherNodeInfo = new KeyValuePair<MapNode, float> (otherNode, dist);
+					nodes.Add (otherNodeInfo);
 				}
 			}
 		}

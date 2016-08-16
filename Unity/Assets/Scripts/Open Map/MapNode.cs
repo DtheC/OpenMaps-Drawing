@@ -70,6 +70,14 @@ public class MapNode {
 		}
 	}
 
+	//TODO Change based on the need send associated with the to be created dictionary of current need values
+	public void AddToNeed(Needs need, float value){
+		NearbyAmountOfFood += value / 100.0f; //TODO This arbitrary value should be a variable somewhere.
+		if (NearbyAmountOfFood+AmountOfFood > 1.0f){
+			NearbyAmountOfFood = 1.0f-AmountOfFood;
+		}
+	}
+
 	public void SetWaterBasedOnTags(){
 		AmountOfWater = 0f;
 		foreach (KeyValuePair<string, IList<string>> entry in _tags) {
