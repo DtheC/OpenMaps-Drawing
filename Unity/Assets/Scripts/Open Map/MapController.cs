@@ -76,13 +76,15 @@ public class MapController : MonoBehaviour {
 		foreach (MapNode n in _nodeList) {
 			IDictionary<MapNode, float> nodes = GetNodesInRange (n, NeedPropogationRange);
 			foreach (KeyValuePair<MapNode, float> neighbour in nodes) {
-
-				float foodAmount = (neighbour.Value/NeedPropogationRange)*n.AmountOfFood;
-				neighbour.Key.PropogateNeedsToNeighbours (foodAmount);
-
-				neighbour.Key.AddToNeed (Needs.Food, neighbour.Value/NeedPropogationRange); //Divide by the NeedPropogationRange to get a value between 0 and 1
-				//neighbour.PropogateNeedsToNeighbours (n.AmountOfFood);
-
+				//Construct a Needs dictionary to send
+				Dictionary<Needs, float> neighbourValues = new Dictionary<Needs, float>();
+				//Set the values in the dictionary to neightbour distance / needproprange * n.NeedAmounts
+				foreach (Needs need in System.Enum.GetValues(typeof(Needs))) 
+				{
+					float needValue = (neighbour.Value / NeedPropogationRange) * n.NeedAmounts [need];
+					neighbourValues.Add (need, needValue);
+				}
+				neighbour.Key.PropogateNeedsToNeighbours (neighbourValues);
 			}
 		}
 	}
@@ -252,9 +254,6 @@ public class MapController : MonoBehaviour {
 				float dist = Vector3.Distance (node.LocationInUnits, otherNode.LocationInUnits);
 				if (dist < range) {
 					nodes.Add (otherNode, dist);
-
-					KeyValuePair<MapNode, float> otherNodeInfo = new KeyValuePair<MapNode, float> (otherNode, dist);
-					nodes.Add (otherNodeInfo);
 				}
 			}
 		}

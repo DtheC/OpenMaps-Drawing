@@ -11,9 +11,8 @@ public class MapNode {
 
 	public IList<MapNode> _connectedNodes { get; set; }
 
-	public float AmountOfWater = 0;
-	public float AmountOfFood = 0;
-	public float NearbyAmountOfFood = 0;
+	public IDictionary<Needs, float> NeedAmounts;
+	public IDictionary<Needs, float> NearbyNeedAmounts;
 
 	private Vector3? _locationInUnits;
 	public Vector3 LocationInUnits 
@@ -34,6 +33,15 @@ public class MapNode {
 		_lon = lon;
 
 		_tags = null;
+
+		//Set default values for each need
+		NeedAmounts = new Dictionary<Needs, float> ();
+		NearbyNeedAmounts = new Dictionary<Needs, float> ();
+		foreach (Needs need in System.Enum.GetValues(typeof(Needs))) 
+		{
+			NeedAmounts.Add (need, 0);
+			NearbyNeedAmounts.Add (need, 0);
+		}
 	}
 
 	public void updateUnitLocationVectors(){
@@ -52,50 +60,33 @@ public class MapNode {
 		}
 		_connectedNodes.Add (neighbour);
 	}
+		
+	public void PropogateNeedsToNeighbours(Dictionary<Needs, float> valuesToPropogate){
+		foreach (KeyValuePair<Needs, float> pair in valuesToPropogate) {
+			NearbyNeedAmounts [pair.Key] += pair.Value;
 
-
-	public void PropogateNeedsToNeighbours(){
-		if (_connectedNodes != null) {
-			foreach (MapNode neighbour in _connectedNodes) {
-				neighbour.PropogateNeedsToNeighbours (AmountOfFood);
+			//TODO: This is gross and could be changed elsewhere I think. Look into how to recify this.
+			if (NearbyNeedAmounts [pair.Key] + NeedAmounts [pair.Key] > 1.0f) {
+				NearbyNeedAmounts [pair.Key] = 1.0f - NeedAmounts [pair.Key];
 			}
 		}
 	}
 
-	//TODO This should recieve a dictionary of Needs and assocaited values rather than just food
-	public void PropogateNeedsToNeighbours(float topropogate){
-		NearbyAmountOfFood += topropogate; 
-		if (NearbyAmountOfFood+AmountOfFood > 1.0f){
-			NearbyAmountOfFood = 1.0f-AmountOfFood;
-		}
-	}
-
-	//TODO Change based on the need send associated with the to be created dictionary of current need values
-	public void AddToNeed(Needs need, float value){
-		NearbyAmountOfFood += value / 100.0f; //TODO This arbitrary value should be a variable somewhere.
-		if (NearbyAmountOfFood+AmountOfFood > 1.0f){
-			NearbyAmountOfFood = 1.0f-AmountOfFood;
-		}
-	}
-
 	public void SetWaterBasedOnTags(){
-		AmountOfWater = 0f;
 		foreach (KeyValuePair<string, IList<string>> entry in _tags) {
 			foreach (string v in entry.Value) {
 				if (v.Contains ("drinking_water")) {
-					AmountOfWater = 1.0f;
+					NeedAmounts [Needs.Water] += 0.1f;
 				}
 			}
 		}
 	}
 
 	public void SetFoodBasedOnTags(){
-		AmountOfFood = 0f;
 		foreach (KeyValuePair<string, IList<string>> entry in _tags) {
 			foreach (string v in entry.Value) {
 				if (v.Contains ("restaurant")) {
-					AmountOfFood = 0.1f;
-
+					NeedAmounts [Needs.Food] += 0.1f;
 				}
 			}
 		}
