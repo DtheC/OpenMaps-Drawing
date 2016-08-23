@@ -8,18 +8,11 @@ public class MapDrawer : MonoBehaviour {
 	public bool DrawWaysToScreen = true;
 	public bool OnlyDrawHighways = true;
 
-	public Mesh WayMesh;
+	private Mesh _wayMesh;
 
 	public Material MapMaterial;
 
 	public float RoadWidth = 0.5f;
-
-	private IList<GameObject> _wayMeshes;
-	public IList<GameObject> WayMeshes {
-		get {
-			return _wayMeshes;
-		}
-	}
 
 	private MapController _mapController;
 	public MapController MapController {
@@ -32,7 +25,7 @@ public class MapDrawer : MonoBehaviour {
 	}
 
 	void Start(){
-		_wayMeshes = new List<GameObject> ();
+		
 	}
 
 	public void DrawNodes(IDictionary<double, float[]> nodeDict){
