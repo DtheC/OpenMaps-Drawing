@@ -8,7 +8,10 @@ public class MapDrawer : MonoBehaviour {
 	public bool DrawWaysToScreen = true;
 	public bool OnlyDrawHighways = true;
 
+	public Needs NeedToColour = Needs.Food;
+
 	private Mesh _wayMesh;
+	private IList<Color32> _wayColours;
 
 	public Material MapMaterial;
 
@@ -25,7 +28,7 @@ public class MapDrawer : MonoBehaviour {
 	}
 
 	void Start(){
-		
+		List<Color32> _wayColours = new List<Color32>();
 	}
 
 	public void DrawNodes(IDictionary<double, float[]> nodeDict){
@@ -36,11 +39,8 @@ public class MapDrawer : MonoBehaviour {
 		}
 	}
 
-	public void DrawWays(IList<MapWay> wayList){
-		if (!DrawWaysToScreen) {
-			return;
-		}
-		List<Color32> colours = new List<Color32>();
+	private void GenerateWayMesh(IList<MapWay> wayList){
+		IList<Color32> colours = new List<Color32> ();
 
 		//Create MeshBuilder 
 		MeshBuilder meshBuilder = new MeshBuilder();
@@ -106,7 +106,7 @@ public class MapDrawer : MonoBehaviour {
 
 				red = (byte) ((to.LocationInUnits.z / MapMetaInformation.Instance.MapWidth)*255);
 				green = (byte) ((to.LocationInUnits.x / MapMetaInformation.Instance.MapHeight)*255);
-				blue = (byte) ((from.NeedAmounts[Needs.Food] + from.NearbyNeedAmounts[Needs.Food]) * 255);
+				blue = (byte) ((to.NeedAmounts[Needs.Food] + to.NearbyNeedAmounts[Needs.Food]) * 255);
 
 				ddd = new Color32 (0, 20, blue, 255); 
 				colours.Add (ddd);
@@ -122,6 +122,71 @@ public class MapDrawer : MonoBehaviour {
 		}
 		//Create the mesh:
 		Mesh mesh = meshBuilder.CreateMesh();
+		_wayMesh = mesh;
+		_wayColours = colours;
+		GenerateNeedMeshColours (wayList);
+	}
+
+	private void GenerateNeedMeshColours(IList<MapWay> wayList){
+		IList<Color32> colours = new List<Color32> ();
+
+		//Create MeshBuilder 
+		MeshBuilder meshBuilder = new MeshBuilder();
+		int currentTriangleCount = 0;
+
+		foreach (MapWay mapway in wayList) {
+			if (OnlyDrawHighways){
+				if (!mapway._tags.ContainsKey("highway")){
+					continue;
+				}
+			}
+
+			MapNode to = null;
+			MapNode from = null;
+			//Color randomCol = new Color (Random.Range (0.00f, 1.00f),Random.Range (0.00f, 1.00f),Random.Range (0.00f, 1.00f));
+			for (int i=0; i < mapway._nodesInWay.Count; i++){
+				//Get nodes
+				to = _mapController.GetMapNodeById(mapway._nodesInWay[i]._id);
+				if (to == null){
+					continue;
+				}
+				if (from == null){
+					from = to;
+					continue;
+				}
+
+				byte red = (byte) ((from.LocationInUnits.z / MapMetaInformation.Instance.MapWidth)*255);
+				byte green = (byte) ((from.LocationInUnits.x / MapMetaInformation.Instance.MapHeight)*255);
+				byte blue = (byte) ((from.NeedAmounts[Needs.Food] + from.NearbyNeedAmounts[Needs.Food]) * 255);
+
+				Color32 ddd = new Color32 (0, 21, blue, 255);
+				colours.Add (ddd);
+				colours.Add (ddd);
+
+				red = (byte) ((to.LocationInUnits.z / MapMetaInformation.Instance.MapWidth)*255);
+				green = (byte) ((to.LocationInUnits.x / MapMetaInformation.Instance.MapHeight)*255);
+				blue = (byte) ((to.NeedAmounts[Needs.Food] + to.NearbyNeedAmounts[Needs.Food]) * 255);
+
+				ddd = new Color32 (0, 21, blue, 255); 
+				colours.Add (ddd);
+				colours.Add (ddd);
+
+				from = to;
+			}
+		}
+
+		_wayColours = colours;
+	}
+
+	public void DrawWays(IList<MapWay> wayList){
+		if (!DrawWaysToScreen) {
+			return;
+		}
+
+		if (_wayMesh == null) {
+			//Generate Mesh
+			GenerateWayMesh (wayList);
+		}
 
 		//Look for a MeshFilter component attached to this GameObject:
 		MeshFilter filter = GetComponent<MeshFilter>();
@@ -130,18 +195,18 @@ public class MapDrawer : MonoBehaviour {
 		//Assuming the GameObject also has a renderer attached, our new mesh will now be visible in the scene.
 		if (filter != null)
 		{
-			filter.sharedMesh = mesh;
+			filter.sharedMesh = _wayMesh;
 			GetComponent<MeshRenderer> ().material = MapMaterial;
 		}
 
-		ColourMesh (colours);
+		ColourMesh (_wayColours);
 	}
 
-	void ColourMesh(List<Color32> cols){
+	void ColourMesh(IList<Color32> cols){
 		Mesh mesh = GetComponent<MeshFilter>().mesh;
 		Vector3[] vertices = mesh.vertices;
 		Color[] colors = new Color[vertices.Length];
-		Debug.Log (vertices.Length);
+
 		int i = 0;
 		while (i < vertices.Length) {
 			colors [i] = cols [i];
