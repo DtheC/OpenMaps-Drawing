@@ -201,7 +201,7 @@ public class MapDrawer : MonoBehaviour {
             byte green = (byte)((node.NeedAmounts[Needs.Food] + node.NearbyNeedAmounts[Needs.Shelter]) * 255);
             byte blue = needColor = (byte)((node.NeedAmounts[Needs.Water] + node.NearbyNeedAmounts[Needs.Water]) * 255);
 
-            vertexColor = new Color32(red, 0, blue, 255);
+            vertexColor = new Color32(red, green, blue, 255);
         }
         else
         {

@@ -81,7 +81,7 @@ public class MapNode {
                 {
                     if (v.Contains(x))
                     {
-                        NeedAmounts[Needs.Water] += 0.1f;
+                        NeedAmounts[Needs.Water] += 0.2f;
                     }
                 }
             }
@@ -96,7 +96,7 @@ public class MapNode {
                 {
                     if (v.Contains(x))
                     {
-                        NeedAmounts[Needs.Food] += 0.1f;
+                        NeedAmounts[Needs.Food] += 0.05f;
                     }
                 }
 			}
@@ -113,7 +113,7 @@ public class MapNode {
                 {
                     if (v.Contains(x))
                     {
-                        NeedAmounts[Needs.Shelter] += 0.1f;
+                        NeedAmounts[Needs.Shelter] += 0.2f;
                     }
                 }
             }

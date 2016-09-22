@@ -9,9 +9,10 @@ public class WayTracerEmitter : MonoBehaviour {
 
 	void Update(){
 
-		if (Input.anyKey) {
-			WayTracer _w = Instantiate (wayTracerObject).GetComponent<WayTracer> ();
-			_w.Init (mapControl, this);
+		if (Input.GetKey("left")) {
+            GameObject _w = (GameObject) Instantiate(wayTracerObject, transform.position, Quaternion.identity);
+            WayTracer _ww = _w.GetComponent<WayTracer>();
+			_ww.Init (mapControl, this);
 		}
 	}
 
