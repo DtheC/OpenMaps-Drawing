@@ -17,7 +17,7 @@ SubShader {
             Emission [_Emission]    
         }
         ColorMaterial AmbientAndDiffuse
-        Lighting On
+        Lighting Off
         SeparateSpecular On
         SetTexture [_MainTex] {
             Combine texture * primary, texture * primary
