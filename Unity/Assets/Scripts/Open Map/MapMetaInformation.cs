@@ -91,6 +91,7 @@ public class MapMetaInformation : MonoBehaviour {
 		_mapWidth = Mathf.Abs(_minLat - _maxLat) * OneLatitudeDegreeInUnits;
 		_mapHeight = Mathf.Abs(_minLon - _maxLon) * OneLongitudeDegreeInUnits;
 
+        CameraController.Instance.SetCameraPosition(new Vector3(MapLatValue(_minLat)+(_mapWidth/2), 0, MapLonValue(_minLon) +(_mapHeight/2)));
 	}
 
 	public float MapLonValue(float value){
