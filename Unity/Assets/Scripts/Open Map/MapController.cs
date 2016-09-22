@@ -170,6 +170,7 @@ public class MapController : MonoBehaviour {
 			_newNode._tags = nodeTags;
 			_newNode.SetWaterBasedOnTags ();
 			_newNode.SetFoodBasedOnTags ();
+            _newNode.SetShelterBasedOnTags();
 			_nodeList.Add(_newNode);
 			//_newNode.LogTags ("ater");
 		}
