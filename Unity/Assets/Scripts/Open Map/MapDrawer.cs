@@ -96,21 +96,47 @@ public class MapDrawer : MonoBehaviour {
 				meshBuilder.UVs.Add(new Vector2(0.0f, 1.0f));
 				meshBuilder.Normals.Add(Vector3.up);
 
-				byte red = (byte) ((from.LocationInUnits.z / MapMetaInformation.Instance.MapWidth)*255);
-				byte green = (byte) ((from.LocationInUnits.x / MapMetaInformation.Instance.MapHeight)*255);
-				byte blue = (byte) ((from.NeedAmounts[Needs.Food] + from.NearbyNeedAmounts[Needs.Food]) * 255);
+                byte needColor;
+                Color32 vertexColor; 
 
-				Color32 ddd = new Color32 (0, 20, blue, 255);
-				colours.Add (ddd);
-				colours.Add (ddd);
+                if (NeedToColour == Needs.Food)
+                {
+                    needColor = (byte)((from.NeedAmounts[Needs.Food] + from.NearbyNeedAmounts[Needs.Food]) * 255);
+                    vertexColor = new Color32(needColor, 0, 0, 255);
+                } else
+                {
+                    needColor = (byte)((from.NeedAmounts[Needs.Water] + from.NearbyNeedAmounts[Needs.Water]) * 255);
+                    vertexColor = new Color32(0, 0, needColor, 255);
+                }
 
-				red = (byte) ((to.LocationInUnits.z / MapMetaInformation.Instance.MapWidth)*255);
-				green = (byte) ((to.LocationInUnits.x / MapMetaInformation.Instance.MapHeight)*255);
-				blue = (byte) ((to.NeedAmounts[Needs.Food] + to.NearbyNeedAmounts[Needs.Food]) * 255);
+                //byte red = (byte) ((from.LocationInUnits.z / MapMetaInformation.Instance.MapWidth)*255);
+                //byte green = (byte) ((from.LocationInUnits.x / MapMetaInformation.Instance.MapHeight)*255);
+                //byte blue = (byte) ((from.NeedAmounts[Needs.Food] + from.NearbyNeedAmounts[Needs.Food]) * 255);
 
-				ddd = new Color32 (0, 20, blue, 255); 
-				colours.Add (ddd);
-				colours.Add (ddd);
+                //Color32 ddd = new Color32 (0, 0, blue, blue);
+
+                colours.Add (vertexColor);
+				colours.Add (vertexColor);
+
+                //Other side
+                if (NeedToColour == Needs.Food)
+                {
+                    needColor = (byte)((from.NeedAmounts[Needs.Food] + from.NearbyNeedAmounts[Needs.Food]) * 255);
+                    vertexColor = new Color32(needColor, 0, 0, 255);
+                }
+                else
+                {
+                    needColor = (byte)((from.NeedAmounts[Needs.Water] + from.NearbyNeedAmounts[Needs.Water]) * 255);
+                    vertexColor = new Color32(0, 0, needColor, 255);
+                }
+
+                //red = (byte) ((to.LocationInUnits.z / MapMetaInformation.Instance.MapWidth)*255);
+				//green = (byte) ((to.LocationInUnits.x / MapMetaInformation.Instance.MapHeight)*255);
+				//blue = (byte) ((to.NeedAmounts[Needs.Food] + to.NearbyNeedAmounts[Needs.Food]) * 255);
+
+				//ddd = new Color32 (0, 0, blue, blue); 
+				colours.Add (vertexColor);
+				colours.Add (vertexColor);
 
 				//Add the triangles:
 				meshBuilder.AddTriangle(currentTriangleCount, currentTriangleCount+1, currentTriangleCount+2);
@@ -132,7 +158,6 @@ public class MapDrawer : MonoBehaviour {
 
 		//Create MeshBuilder 
 		MeshBuilder meshBuilder = new MeshBuilder();
-		int currentTriangleCount = 0;
 
 		foreach (MapWay mapway in wayList) {
 			if (OnlyDrawHighways){
