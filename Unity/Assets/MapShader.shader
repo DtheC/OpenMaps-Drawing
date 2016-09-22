@@ -18,7 +18,6 @@ SubShader {
         ColorMaterial AmbientAndDiffuse
         Lighting Off
         SeparateSpecular On
-       
     }
 }
  

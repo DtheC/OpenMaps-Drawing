@@ -9,6 +9,7 @@ public class MapDrawer : MonoBehaviour {
 	public bool OnlyDrawHighways = true;
 
 	public Needs NeedToColour = Needs.Food;
+    public bool DrawAll = true;
 
 	private Mesh _wayMesh;
 	private IList<Color32> _wayColours;
@@ -96,6 +97,7 @@ public class MapDrawer : MonoBehaviour {
 				meshBuilder.UVs.Add(new Vector2(0.0f, 1.0f));
 				meshBuilder.Normals.Add(Vector3.up);
 
+                //Don't edit colours here- do it in the GenerateMeshColours function below!
                 byte needColor;
                 Color32 vertexColor; 
 
@@ -108,34 +110,23 @@ public class MapDrawer : MonoBehaviour {
                     needColor = (byte)((from.NeedAmounts[Needs.Water] + from.NearbyNeedAmounts[Needs.Water]) * 255);
                     vertexColor = new Color32(0, 0, needColor, 255);
                 }
-
-                //byte red = (byte) ((from.LocationInUnits.z / MapMetaInformation.Instance.MapWidth)*255);
-                //byte green = (byte) ((from.LocationInUnits.x / MapMetaInformation.Instance.MapHeight)*255);
-                //byte blue = (byte) ((from.NeedAmounts[Needs.Food] + from.NearbyNeedAmounts[Needs.Food]) * 255);
-
-                //Color32 ddd = new Color32 (0, 0, blue, blue);
-
+                
                 colours.Add (vertexColor);
 				colours.Add (vertexColor);
 
                 //Other side
                 if (NeedToColour == Needs.Food)
                 {
-                    needColor = (byte)((from.NeedAmounts[Needs.Food] + from.NearbyNeedAmounts[Needs.Food]) * 255);
+                    needColor = (byte)((to.NeedAmounts[Needs.Food] + to.NearbyNeedAmounts[Needs.Food]) * 255);
                     vertexColor = new Color32(needColor, 0, 0, 255);
                 }
                 else
                 {
-                    needColor = (byte)((from.NeedAmounts[Needs.Water] + from.NearbyNeedAmounts[Needs.Water]) * 255);
+                    needColor = (byte)((to.NeedAmounts[Needs.Water] + to.NearbyNeedAmounts[Needs.Water]) * 255);
                     vertexColor = new Color32(0, 0, needColor, 255);
                 }
-
-                //red = (byte) ((to.LocationInUnits.z / MapMetaInformation.Instance.MapWidth)*255);
-				//green = (byte) ((to.LocationInUnits.x / MapMetaInformation.Instance.MapHeight)*255);
-				//blue = (byte) ((to.NeedAmounts[Needs.Food] + to.NearbyNeedAmounts[Needs.Food]) * 255);
-
-				//ddd = new Color32 (0, 0, blue, blue); 
-				colours.Add (vertexColor);
+                
+                colours.Add (vertexColor);
 				colours.Add (vertexColor);
 
 				//Add the triangles:
@@ -179,29 +170,59 @@ public class MapDrawer : MonoBehaviour {
 					from = to;
 					continue;
 				}
+                
+                Color32 vertexColor;
 
-				byte red = (byte) ((from.LocationInUnits.z / MapMetaInformation.Instance.MapWidth)*255);
-				byte green = (byte) ((from.LocationInUnits.x / MapMetaInformation.Instance.MapHeight)*255);
-				byte blue = (byte) ((from.NeedAmounts[Needs.Food] + from.NearbyNeedAmounts[Needs.Food]) * 255);
+                vertexColor = GetColourOfVertexBasedOnNeed(from);
+                
+                colours.Add (vertexColor);
+				colours.Add (vertexColor);
 
-				Color32 ddd = new Color32 (0, 21, blue, 255);
-				colours.Add (ddd);
-				colours.Add (ddd);
+                vertexColor = GetColourOfVertexBasedOnNeed(to);
 
-				red = (byte) ((to.LocationInUnits.z / MapMetaInformation.Instance.MapWidth)*255);
-				green = (byte) ((to.LocationInUnits.x / MapMetaInformation.Instance.MapHeight)*255);
-				blue = (byte) ((to.NeedAmounts[Needs.Food] + to.NearbyNeedAmounts[Needs.Food]) * 255);
+                colours.Add(vertexColor);
+                colours.Add(vertexColor);
 
-				ddd = new Color32 (0, 21, blue, 255); 
-				colours.Add (ddd);
-				colours.Add (ddd);
-
-				from = to;
+                from = to;
 			}
 		}
 
 		_wayColours = colours;
 	}
+
+    private Color32 GetColourOfVertexBasedOnNeed(MapNode node)
+    {
+        Color32 vertexColor = new Color32(255, 255, 255, 255);
+        byte needColor;
+
+        if (DrawAll)
+        {
+            byte red = (byte)((node.NeedAmounts[Needs.Food] + node.NearbyNeedAmounts[Needs.Food]) * 255);
+            byte green = (byte)((node.NeedAmounts[Needs.Food] + node.NearbyNeedAmounts[Needs.Shelter]) * 255);
+            byte blue = needColor = (byte)((node.NeedAmounts[Needs.Water] + node.NearbyNeedAmounts[Needs.Water]) * 255);
+
+            vertexColor = new Color32(red, 0, blue, 255);
+        }
+        else
+        {
+            //TODO Rewrite this as a switch statement
+            if (NeedToColour == Needs.Food)
+            {
+                needColor = (byte)((node.NeedAmounts[Needs.Food] + node.NearbyNeedAmounts[Needs.Food]) * 255);
+                vertexColor = new Color32(needColor, 0, 0, 255);
+            }
+            if (NeedToColour == Needs.Water)
+            {
+                needColor = (byte)((node.NeedAmounts[Needs.Water] + node.NearbyNeedAmounts[Needs.Water]) * 255);
+                vertexColor = new Color32(0, 0, needColor, 255);
+            } else
+            {
+                needColor = (byte)((node.NeedAmounts[Needs.Shelter] + node.NearbyNeedAmounts[Needs.Shelter]) * 255);
+                vertexColor = new Color32(0, needColor, 0, 255);
+            }
+        }
+        return vertexColor;
+    }
 
 	public void DrawWays(IList<MapWay> wayList){
 		if (!DrawWaysToScreen) {

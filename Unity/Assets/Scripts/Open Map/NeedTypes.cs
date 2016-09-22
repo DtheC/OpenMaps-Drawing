@@ -6,5 +6,6 @@ using System.Collections;
 /// </summary>
 public enum Needs{
 	Water,
-	Food
+	Food,
+    Shelter
 }

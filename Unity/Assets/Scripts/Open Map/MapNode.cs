@@ -73,26 +73,54 @@ public class MapNode {
 	}
 
 	public void SetWaterBasedOnTags(){
-		foreach (KeyValuePair<string, IList<string>> entry in _tags) {
-			foreach (string v in entry.Value) {
-				if (v.Contains ("drinking_water")) {
-					NeedAmounts [Needs.Water] += 0.1f;
-				}
-			}
-		}
+        foreach (KeyValuePair<string, IList<string>> entry in _tags)
+        {
+            foreach (string v in entry.Value)
+            {
+                foreach (string x in MapMetaInformation.Instance.WaterTags)
+                {
+                    if (v.Contains(x))
+                    {
+                        NeedAmounts[Needs.Water] += 0.1f;
+                    }
+                }
+            }
+        }
 	}
 
 	public void SetFoodBasedOnTags(){
 		foreach (KeyValuePair<string, IList<string>> entry in _tags) {
-			foreach (string v in entry.Value) {
-				if (v.Contains ("restaurant")) {
-					NeedAmounts [Needs.Food] += 0.1f;
-				}
+            foreach (string v in entry.Value)
+            {
+                foreach (string x in MapMetaInformation.Instance.FoodTags)
+                {
+                    if (v.Contains(x))
+                    {
+                        NeedAmounts[Needs.Food] += 0.1f;
+                    }
+                }
 			}
 		}
 	}
 
-	public MapNode GetRandomNeighbour(){
+    public void SetShelterBasedOnTags()
+    {
+        foreach (KeyValuePair<string, IList<string>> entry in _tags)
+        {
+            foreach (string v in entry.Value)
+            {
+                foreach (string x in MapMetaInformation.Instance.ShelterTags)
+                {
+                    if (v.Contains(x))
+                    {
+                        NeedAmounts[Needs.Shelter] += 0.1f;
+                    }
+                }
+            }
+        }
+    }
+
+    public MapNode GetRandomNeighbour(){
 		if (_connectedNodes != null){
 			System.Random rnd = new System.Random();
 			int i = rnd.Next(_connectedNodes.Count);

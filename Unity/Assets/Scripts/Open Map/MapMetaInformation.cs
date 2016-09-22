@@ -64,7 +64,11 @@ public class MapMetaInformation : MonoBehaviour {
 		}
 	}
 
-	void Awake() {
+    public string[] WaterTags = { "drinking_water", "water", "refreshments", "pool" };
+    public string[] FoodTags = { "restaurant", "cafe", "groceries", "lunch" };
+    public string[] ShelterTags = { "hotel", "motel", "bed", "shelter" };
+
+    void Awake() {
 		m_Instance = this;
 	}
 
