@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using System;
 
 public class MapNode {
 	
@@ -39,8 +40,8 @@ public class MapNode {
 		NearbyNeedAmounts = new Dictionary<Needs, float> ();
 		foreach (Needs need in System.Enum.GetValues(typeof(Needs))) 
 		{
-			NeedAmounts.Add (need, 0);
-			NearbyNeedAmounts.Add (need, 0);
+			NeedAmounts.Add (need, 0.0f);
+			NearbyNeedAmounts.Add (need, 0.0f);
 		}
 	}
 
@@ -118,6 +119,29 @@ public class MapNode {
                 }
             }
         }
+    }
+
+    public Dictionary<Needs, MapNode> GetHighestNeedNeighbours()
+    {
+        var returned = new Dictionary<Needs, MapNode>();
+
+        foreach (Needs n in Enum.GetValues(typeof(Needs)))
+        {
+            returned[n] = _connectedNodes[0];  
+        }
+
+        foreach (MapNode node in _connectedNodes)
+        {
+            foreach (KeyValuePair<Needs, MapNode> n in returned)
+            {
+                if (node.NeedAmounts[n.Key] > n.Value.NeedAmounts[n.Key])
+                {
+                    returned[n.Key] = node;
+                }
+            }
+        }
+
+        return returned;
     }
 
     public MapNode GetRandomNeighbour(){

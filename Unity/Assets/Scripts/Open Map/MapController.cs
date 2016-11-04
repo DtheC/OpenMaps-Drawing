@@ -171,7 +171,8 @@ public class MapController : MonoBehaviour {
 			_newNode.SetWaterBasedOnTags ();
 			_newNode.SetFoodBasedOnTags ();
             _newNode.SetShelterBasedOnTags();
-			_nodeList.Add(_newNode);
+            //Debug.Log(_newNode.NeedAmounts[Needs.Food]);
+            _nodeList.Add(_newNode);
 			//_newNode.LogTags ("ater");
 		}
 		Debug.Log ("Node dictionary initalised with " + _nodeList.Count + " items.");
