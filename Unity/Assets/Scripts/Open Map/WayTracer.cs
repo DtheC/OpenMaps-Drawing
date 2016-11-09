@@ -100,6 +100,7 @@ public class EntityNeed
 public class WayTracer : MonoBehaviour
 {
     public EntityNeeds EntitiesNeeds = new EntityNeeds();
+    private WaytracerMovement _tracerMovement;
 
     public float speedOfMovement = 2.0f;
 	public float triggerDistance = 0.1f;
@@ -115,6 +116,7 @@ public class WayTracer : MonoBehaviour
 	private double _travellingToMapNodeId;
 
     private Material _entityColour;
+    private TrailRenderer _entityTrail;
 
     public MapNode TravellingToMapNode
     {
@@ -142,15 +144,17 @@ public class WayTracer : MonoBehaviour
         }
     }
 
-    public void Init (MapController _m, WayTracerEmitter _w)
+    public void Init (MapController _m, WayTracerEmitter _w, WaytracerMovement _move)
 	{
 		_mapController = _m;
 		_parentEmitter = _w;
+        _tracerMovement = _move;
 
 		_currentMapNode = null;
 		_travellingToMapNode = null;
 
         _entityColour = GetComponent<Renderer>().material;
+        _entityTrail = GetComponent<TrailRenderer>();
 
 		//Assign random starting location
 		GetRandomStartingNode ();
@@ -171,13 +175,7 @@ public class WayTracer : MonoBehaviour
 
 	void MoveTowardNewLocation ()
 	{
-		float step = speedOfMovement * Time.deltaTime;
-        
-        if (_travellingToMapNode == null)
-        {
-            _travellingToMapNode = _parentEmitter.GetRandomRoadNode();
-        }
-		transform.position = Vector3.MoveTowards (transform.position, _travellingToMapNode.LocationInUnits, step);
+        _tracerMovement.MoveTowardNewLocation();
 	}
 
 	void GetRandomStartingNode ()
@@ -192,16 +190,16 @@ public class WayTracer : MonoBehaviour
 	{
         //Get all the connection nodes and find which has the highest value of each need
         var highestNeedNodes = _currentMapNode.GetHighestNeedNeighbours();
-
-
-
+        
         //Add the values of the current location to the Entities' needs
         EntitiesNeeds.SetNeedsFromNode(_currentMapNode.NeedAmounts);
         EntitiesNeeds.SetNeedsFromNode(_currentMapNode.NearbyNeedAmounts);
         //Update the colour based on the needs
         UpdateColour();
 
-        _travellingToMapNode = highestNeedNodes[EntitiesNeeds.LowestNeed];
+        //_travellingToMapNode = highestNeedNodes[EntitiesNeeds.LowestNeed];
+
+        _travellingToMapNode = _currentMapNode.GetRandomNeighbour();
 
 		Debug.Assert (_travellingToMapNode != null);
 
@@ -215,6 +213,7 @@ public class WayTracer : MonoBehaviour
     void UpdateColour()
     {
         _entityColour.color = new Color(EntitiesNeeds.GetNeedValue(Needs.Food), EntitiesNeeds.GetNeedValue(Needs.Shelter), EntitiesNeeds.GetNeedValue(Needs.Water));
-        
+        Color trailCol = Color.Lerp(_entityTrail.material.GetColor("_TintColor"), _entityColour.color, 0.1f);
+        _entityTrail.material.SetColor("_TintColor", trailCol);
     }
 }

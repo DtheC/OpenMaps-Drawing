@@ -3,6 +3,15 @@ using System.Collections;
 using System.Collections.Generic;
 
 public class WayTracerEmitter : MonoBehaviour {
+    public enum WayTracerMovementType
+    {
+        Rigid,
+        Free
+    }
+
+    [SerializeField]
+    public WayTracerMovementType MovementType;
+
 
 	public GameObject wayTracerObject;
 	public MapController mapControl;
@@ -12,7 +21,19 @@ public class WayTracerEmitter : MonoBehaviour {
 		if (Input.GetKey("left")) {
             GameObject _w = (GameObject) Instantiate(wayTracerObject, transform.position, Quaternion.identity);
             WayTracer _ww = _w.GetComponent<WayTracer>();
-			_ww.Init (mapControl, this);
+            switch (MovementType)
+            {
+                case WayTracerMovementType.Rigid:
+                    _ww.Init(mapControl, this, new WayTracerMovementRigid(_ww));
+                    break;
+                case WayTracerMovementType.Free:
+                    _ww.Init(mapControl, this, new WaytracerMovementFree(_ww));
+                    break;
+                default:
+                    _ww.Init(mapControl, this, new WayTracerMovementRigid(_ww));
+                    break;
+            }
+            
 		}
 	}
 
