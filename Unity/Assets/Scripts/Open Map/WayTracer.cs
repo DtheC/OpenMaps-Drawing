@@ -168,7 +168,7 @@ public class EntityNeed
 
 public class WayTracer : MonoBehaviour
 {
-    public NeuralNetwork EntityBrain;
+    
     public float[] InputsForBrain;
     public EntityNeeds EntitiesPreviousNeeds = new EntityNeeds();
     public float[] EntitiesBrainOutputs = new float[4];
@@ -224,10 +224,7 @@ public class WayTracer : MonoBehaviour
         _parentEmitter = _w;
         _tracerMovement = _move;
 
-        EntityBrain = new NeuralNetwork();
-        EntityBrain.Initialize(15, 50, 4);
-        EntityBrain.SetLearningRate(0.2f);
-        EntityBrain.SetMomentum(true, 0.9f);
+       
 
         InputsForBrain = new float[15] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
@@ -265,6 +262,10 @@ public class WayTracer : MonoBehaviour
         if (_currentMapNode != null)
         {
             _currentMapNodeId = _currentMapNode._id;
+            gameObject.transform.position = _currentMapNode.LocationInUnits;
+        } else
+        {
+            GetRandomStartingNode();
         }
     }
     
@@ -272,22 +273,22 @@ public class WayTracer : MonoBehaviour
     {
         double error = 1d;
         int c = 0;
-        while ((error > 0.1) && (c < 2000))
+        while ((error > 0.1) && (c < 500))
         {
             c++;
             for (int i = 0; i < inputs.Length; i++)
             {
-                EntityBrain.SetInput(i, inputs[i]);
+                ParentEmitter.EntityBrain.SetInput(i, inputs[i]);
             }
 
             for (int i = 0; i < outputs.Length; i++)
             {
-                EntityBrain.SetDesiredOutput(i, outputs[i]);
+                ParentEmitter.EntityBrain.SetDesiredOutput(i, outputs[i]);
             }
 
-            EntityBrain.FeedForward();
-            error = EntityBrain.CalculateError();
-            EntityBrain.BackPropagate();
+            ParentEmitter.EntityBrain.FeedForward();
+            error = ParentEmitter.EntityBrain.CalculateError();
+            ParentEmitter.EntityBrain.BackPropagate();
         }   
     }
 
@@ -310,58 +311,66 @@ public class WayTracer : MonoBehaviour
         
         //Populate the inputs field with the first available connections
         //TODO: Populate with closest neighbours first (arrange neighbours by distance once on init of MapNode?)
-        for (int i = 0; i < _currentMapNode.ConnectedNodes.Count-1; i += 3)
+        if (_currentMapNode.ConnectedNodes.Count == 1)
         {
-            if (i > InputsForBrain.Length-3)
+            GetRandomStartingNode();
+        }
+        for (int i = 0; i < _currentMapNode.ConnectedNodes.Count; i += 1)
+        {
+            if (i*3 > InputsForBrain.Length)
             {
                 break;
             }
-            InputsForBrain[i] = _currentMapNode.ConnectedNodes[0].NeedAmounts[Needs.Food];
-            InputsForBrain[i + 1] = _currentMapNode.ConnectedNodes[0].NeedAmounts[Needs.Water];
-            InputsForBrain[i + 2] = _currentMapNode.ConnectedNodes[0].NeedAmounts[Needs.Shelter];
+			InputsForBrain[(i*3)] = _currentMapNode.ConnectedNodes[i].NeedAmounts[Needs.Food] + _currentMapNode.ConnectedNodes[i].NearbyNeedAmounts[Needs.Food];
+			InputsForBrain[(i*3) + 1] = _currentMapNode.ConnectedNodes[i].NeedAmounts[Needs.Water] + _currentMapNode.ConnectedNodes[i].NearbyNeedAmounts[Needs.Water];
+			InputsForBrain[(i*i) + 2] = _currentMapNode.ConnectedNodes[i].NeedAmounts[Needs.Shelter] + _currentMapNode.ConnectedNodes[i].NearbyNeedAmounts[Needs.Shelter];
         }
 
         //Set last input values to Entities current needs
         InputsForBrain[12] = EntitiesNeeds.GetNeedValue(Needs.Food);
         InputsForBrain[13] = EntitiesNeeds.GetNeedValue(Needs.Water);
         InputsForBrain[14] = EntitiesNeeds.GetNeedValue(Needs.Shelter);
-
+        
         Debug.Log(InputsForBrain);
 
         //Set Brain Input Values
         for (int i = 0; i < InputsForBrain.Length; i++)
         {
-            EntityBrain.SetInput(i, InputsForBrain[i]);
+            ParentEmitter.EntityBrain.SetInput(i, InputsForBrain[i]);
         }
 
         //Feed values forward
-        EntityBrain.FeedForward();
-
+        ParentEmitter.EntityBrain.FeedForward();
         //Get output values and make decision
-        EntitiesBrainOutputs[0] = EntityBrain.GetOutput(0);
+        EntitiesBrainOutputs[0] = ParentEmitter.EntityBrain.GetOutput(0);
 
         float direction = EntitiesBrainOutputs[0]; //Get value of first Output node
         int nodeToSelect = 0; //Default to the first node in the list
         //4 directions, check the four output nodes
         for (int i = 1; i < 4; i++)
         {
-            EntitiesBrainOutputs[i] = EntityBrain.GetOutput(i);
-            if (EntityBrain.GetOutput(i) > direction)
+            EntitiesBrainOutputs[i] = ParentEmitter.EntityBrain.GetOutput(i);
+            if (ParentEmitter.EntityBrain.GetOutput(i) > direction)
             {
-                direction = EntityBrain.GetOutput(i);
+                direction = ParentEmitter.EntityBrain.GetOutput(i);
                 nodeToSelect = i;
             }
         }
 
-        //Set next node to travel to
-        if (_currentMapNode.ConnectedNodes.Count-1 >= nodeToSelect)
-        {
-            _travellingToMapNode = _currentMapNode.ConnectedNodes[nodeToSelect];
-        }
-        else
-        {
-            Debug.Log("Entity selected node that does not exist to travel to next. Will try again next Update...");
-        }
+		if (InputsForBrain [0] == 0 &&
+		    InputsForBrain [3] == 0 &&
+		    InputsForBrain [6] == 0 &&
+		    InputsForBrain [9] == 0) {
+			_travellingToMapNode = _currentMapNode.GetRandomNeighbour ();
+		} else {
+
+			//Set next node to travel to
+			if (_currentMapNode.ConnectedNodes.Count >= nodeToSelect) {
+				_travellingToMapNode = _currentMapNode.ConnectedNodes [nodeToSelect];
+			} else {
+				Debug.Log ("Entity selected node that does not exist to travel to next. Will try again next Update...");
+			}
+		}
 
         //Get all the connection nodes and find which has the highest value of each need
         //var highestNeedNodes = _currentMapNode.GetHighestNeedNeighbours();
@@ -377,7 +386,7 @@ public class WayTracer : MonoBehaviour
 
         //_travellingToMapNode = _currentMapNode.GetRandomNeighbour();
 
-        Debug.Assert(_travellingToMapNode != null);
+        //Debug.Assert(_travellingToMapNode != null);
 
         if (_travellingToMapNode != null)
         {
@@ -385,7 +394,7 @@ public class WayTracer : MonoBehaviour
         }
         else
         {
-            _travellingToMapNode = _currentMapNode;
+            _travellingToMapNode = ParentEmitter.GetRandomRoadNode();
         }
     }
 

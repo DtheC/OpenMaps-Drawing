@@ -39,6 +39,8 @@ public class MapNode
 
         _tags = null;
 
+		ConnectedNodes = new List<MapNode>();
+
         //Set default values for each need
         NeedAmounts = new Dictionary<Needs, float>();
         NearbyNeedAmounts = new Dictionary<Needs, float>();
