@@ -33,7 +33,7 @@ public class MapMetaInformation : MonoBehaviour {
 		}}
 	
 	private float _minLat;
-
+    
 	public float MinLat {
 		get {
 			return _minLat;
@@ -109,6 +109,7 @@ public class MapMetaInformation : MonoBehaviour {
 
 	public float MapLatValue(float value){
 		return (value - _minLat) * (_mapWidth - 0.0f) / (_maxLat - _minLat) + 0.0f;
+       
 		//return (Mathf.Abs(value) * Mathf.Abs(Mathf.Abs (_maxLat) - Mathf.Abs(_minLat))) * MapWidth;
 	}
 	

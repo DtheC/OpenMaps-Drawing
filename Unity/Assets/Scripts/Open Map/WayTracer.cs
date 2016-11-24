@@ -103,17 +103,17 @@ public class WayTracer : MonoBehaviour
     private WaytracerMovement _tracerMovement;
 
     public float speedOfMovement = 2.0f;
-	public float triggerDistance = 0.1f;
+    public float triggerDistance = 0.1f;
 
-	private MapController _mapController;
-	private WayTracerEmitter _parentEmitter;
+    private MapController _mapController;
+    private WayTracerEmitter _parentEmitter;
 
-	private MapNode _currentMapNode;
-	private MapNode _travellingToMapNode;
+    private MapNode _currentMapNode;
+    private MapNode _travellingToMapNode;
 
-	[SerializeField] 
-	private double _currentMapNodeId;
-	private double _travellingToMapNodeId;
+    [SerializeField]
+    private double _currentMapNodeId;
+    private double _travellingToMapNodeId;
 
     private Material _entityColour;
     private TrailRenderer _entityTrail;
@@ -144,53 +144,54 @@ public class WayTracer : MonoBehaviour
         }
     }
 
-    public void Init (MapController _m, WayTracerEmitter _w, WaytracerMovement _move)
-	{
-		_mapController = _m;
-		_parentEmitter = _w;
+    public void Init(MapController _m, WayTracerEmitter _w, WaytracerMovement _move)
+    {
+        _mapController = _m;
+        _parentEmitter = _w;
         _tracerMovement = _move;
 
-		_currentMapNode = null;
-		_travellingToMapNode = null;
+        _currentMapNode = null;
+        _travellingToMapNode = null;
 
         _entityColour = GetComponent<Renderer>().material;
         _entityTrail = GetComponent<TrailRenderer>();
 
-		//Assign random starting location
-		GetRandomStartingNode ();
-		//Assign a connected node to move toward
-		GetNextConnection ();
-	}
+        //Assign random starting location
+        GetRandomStartingNode();
+        //Assign a connected node to move toward
+        GetNextConnection();
+    }
 
-	void Update ()
-	{
-		MoveTowardNewLocation ();
+    void Update()
+    {
+        MoveTowardNewLocation();
         if (Vector3.Distance(transform.position, _travellingToMapNode.LocationInUnits) < triggerDistance)
         {
             _currentMapNode = _travellingToMapNode;
             GetNextConnection();
         }
         EntitiesNeeds.UseNeeds();
-	}
+    }
 
-	void MoveTowardNewLocation ()
-	{
+    void MoveTowardNewLocation()
+    {
         _tracerMovement.MoveTowardNewLocation();
-	}
+    }
 
-	void GetRandomStartingNode ()
-	{
-		_currentMapNode = _parentEmitter.GetRandomRoadNode ();
-		if (_currentMapNode != null) {
-			_currentMapNodeId = _currentMapNode._id;
-		}
-	}
+    void GetRandomStartingNode()
+    {
+        _currentMapNode = _parentEmitter.GetRandomRoadNode();
+        if (_currentMapNode != null)
+        {
+            _currentMapNodeId = _currentMapNode._id;
+        }
+    }
 
-	void GetNextConnection ()
-	{
+    void GetNextConnection()
+    {
         //Get all the connection nodes and find which has the highest value of each need
         var highestNeedNodes = _currentMapNode.GetHighestNeedNeighbours();
-        
+
         //Add the values of the current location to the Entities' needs
         EntitiesNeeds.SetNeedsFromNode(_currentMapNode.NeedAmounts);
         EntitiesNeeds.SetNeedsFromNode(_currentMapNode.NearbyNeedAmounts);
@@ -201,14 +202,17 @@ public class WayTracer : MonoBehaviour
 
         _travellingToMapNode = _currentMapNode.GetRandomNeighbour();
 
-		Debug.Assert (_travellingToMapNode != null);
+        Debug.Assert(_travellingToMapNode != null);
 
-		if (_travellingToMapNode != null) {
-			_travellingToMapNodeId = _travellingToMapNode._id;
-		} else {
-			_travellingToMapNode = _currentMapNode;
-		}
-	}
+        if (_travellingToMapNode != null)
+        {
+            _travellingToMapNodeId = _travellingToMapNode._id;
+        }
+        else
+        {
+            _travellingToMapNode = _currentMapNode;
+        }
+    }
 
     void UpdateColour()
     {

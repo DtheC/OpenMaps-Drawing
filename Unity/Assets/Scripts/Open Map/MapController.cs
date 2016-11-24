@@ -37,11 +37,8 @@ public class MapController : MonoBehaviour {
 	private IList<MapNode> _nodeList;
 
 	void Start () {
-
 		_mapXML = new XmlDocument ();
-        Debug.Log("MapXML variable created");
-        _mapXML.LoadXml (Name.ToString());
-        Debug.Log("XML loaded into variable");
+		_mapXML.LoadXml (Name.ToString());
 
 		MapDrawer.MapController = this;
 		
@@ -51,13 +48,10 @@ public class MapController : MonoBehaviour {
 		_wayList = new List<MapWay> ();
 		_nodeList = new List<MapNode> ();
 
-        //InitWorldBounds ();
-        Debug.Log("Init node list");
+		InitWorldBounds ();
 		InitNodeList ();
-        Debug.Log("Init way list");
-        InitWayList ();
-        Debug.Log("Init node neighbours list");
-        InitNodeNeighbourLists ();
+		InitWayList ();
+		InitNodeNeighbourLists ();
 		PropogateNeedsToNeighbours ();
 
 		//foreach (MapNode m in _nodeList) {
@@ -156,32 +150,9 @@ public class MapController : MonoBehaviour {
 	}
 
 	void InitNodeList(){
-        int count = 0;
 		foreach (XmlNode n in _nodes) {
-            //Init World Bounds
-            float x = float.Parse(n.Attributes.GetNamedItem("lat").Value);
-            float y = float.Parse(n.Attributes.GetNamedItem("lon").Value);
-
-            if (_minLat > x || _minLat == float.MaxValue)
-            {
-                _minLat = x;
-            }
-            if (_maxLat < x || _maxLat == float.MaxValue)
-            {
-                _maxLat = x;
-            }
-            if (_minLon > y || _minLon == float.MaxValue)
-            {
-                _minLon = y;
-            }
-            if (_maxLon < y || _maxLon == float.MaxValue)
-            {
-                _maxLon = y;
-            }
-
-            count++;
-			//float x = float.Parse (n.Attributes.GetNamedItem ("lat").Value);
-			//float y = float.Parse (n.Attributes.GetNamedItem ("lon").Value);
+			float x = float.Parse (n.Attributes.GetNamedItem ("lat").Value);
+			float y = float.Parse (n.Attributes.GetNamedItem ("lon").Value);
 			MapNode _newNode = new MapNode(double.Parse (n.Attributes.GetNamedItem ("id").Value), x, y);
 			_newNode.updateUnitLocationVectors();
 
@@ -203,13 +174,8 @@ public class MapController : MonoBehaviour {
             //Debug.Log(_newNode.NeedAmounts[Needs.Food]);
             _nodeList.Add(_newNode);
 			//_newNode.LogTags ("ater");
-            if (count % 10 == 0)
-            {
-                Debug.Log("Node List Count: " + count);
-            }
 		}
-        MapMetaInformation.Instance.SetMetaValues(_minLat, _maxLat, _minLon, _maxLon);
-        Debug.Log ("Node dictionary initalised with " + _nodeList.Count + " items.");
+		Debug.Log ("Node dictionary initalised with " + _nodeList.Count + " items.");
 	}
 
 	void InitWorldBounds(){

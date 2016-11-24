@@ -33,13 +33,17 @@ public class WayTracerMovementRigid : WaytracerMovement
 
 public class WaytracerMovementFree : WaytracerMovement
 {
-    public WaytracerMovementFree(WayTracer _p) : base(_p){}
+    private float _GA_Speed;
+
+    public WaytracerMovementFree(WayTracer _p) : base(_p){
+        _GA_Speed = Random.value;
+    }
 
     public override void MoveTowardNewLocation()
     {
         Parent.transform.LookAt(Parent.TravellingToMapNode.LocationInUnits);
-
-        Parent.GetComponent<Rigidbody>().AddForce(Parent.transform.forward*0.75f);
+        
+        Parent.GetComponent<Rigidbody>().AddForce(Parent.transform.forward*_GA_Speed);
         /*
         float step = Parent.speedOfMovement * Time.deltaTime;
 
