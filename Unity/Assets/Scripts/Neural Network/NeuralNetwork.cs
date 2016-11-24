@@ -67,7 +67,7 @@ public class NeuralNetwork
         return 2147483647;
     }
 
-    void SetDesiredOutput(int i, float value)
+    public void SetDesiredOutput(int i, float value)
     {
         if ((i >= 0) && (i < OutputLayer.NumberOfNodes))
         {

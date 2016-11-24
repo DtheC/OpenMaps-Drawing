@@ -5,7 +5,7 @@ using System.Collections.Generic;
 public class WayTracerEmitter : MonoBehaviour
 {
 
-    public NeuralNetwork EntityBrain;
+    
 
     public enum WayTracerMovementType
     {
@@ -23,10 +23,7 @@ public class WayTracerEmitter : MonoBehaviour
     void Start()
     {
 
-        EntityBrain = new NeuralNetwork();
-        EntityBrain.Initialize(15, 50, 4);
-        EntityBrain.SetLearningRate(0.2f);
-        EntityBrain.SetMomentum(true, 0.9f);
+        
     }
 
     void Update()
@@ -48,7 +45,6 @@ public class WayTracerEmitter : MonoBehaviour
                     _ww.Init(mapControl, this, new WayTracerMovementRigid(_ww));
                     break;
             }
-
         }
     }
 

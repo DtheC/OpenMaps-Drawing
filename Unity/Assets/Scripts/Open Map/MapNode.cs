@@ -11,7 +11,7 @@ public class MapNode
     public float _lat { get; set; }
     public float _lon { get; set; }
 
-    public IList<MapNode> _connectedNodes { get; set; }
+    public IList<MapNode> ConnectedNodes { get; set; }
 
     public IDictionary<Needs, float> NeedAmounts;
     public IDictionary<Needs, float> NearbyNeedAmounts;
@@ -56,19 +56,19 @@ public class MapNode
 
     public void AddNeighbouringNode(MapNode neighbour)
     {
-        if (_connectedNodes == null)
+        if (ConnectedNodes == null)
         {
-            _connectedNodes = new List<MapNode>();
+            ConnectedNodes = new List<MapNode>();
         }
         //Make sure this neighbour isn't already in the list.
-        foreach (MapNode n in _connectedNodes)
+        foreach (MapNode n in ConnectedNodes)
         {
             if (n._id == neighbour._id)
             {
                 return;
             }
         }
-        _connectedNodes.Add(neighbour);
+        ConnectedNodes.Add(neighbour);
     }
 
     public void PropogateNeedsToNeighbours(Dictionary<Needs, float> valuesToPropogate)
@@ -142,10 +142,10 @@ public class MapNode
 
         foreach (Needs n in Enum.GetValues(typeof(Needs)))
         {
-            returned[n] = _connectedNodes[0];
+            returned[n] = ConnectedNodes[0];
         }
 
-        foreach (MapNode node in _connectedNodes)
+        foreach (MapNode node in ConnectedNodes)
         {
             foreach (KeyValuePair<Needs, MapNode> n in returned)
             {
@@ -161,11 +161,11 @@ public class MapNode
 
     public MapNode GetRandomNeighbour()
     {
-        if (_connectedNodes != null)
+        if (ConnectedNodes != null)
         {
             System.Random rnd = new System.Random();
-            int i = rnd.Next(_connectedNodes.Count);
-            return _connectedNodes[i];
+            int i = rnd.Next(ConnectedNodes.Count);
+            return ConnectedNodes[i];
         }
         return null;
     }
@@ -199,7 +199,7 @@ public class MapNode
     {
         string output = "";
         output += _id + ": ";
-        foreach (MapNode d in _connectedNodes)
+        foreach (MapNode d in ConnectedNodes)
         {
             output += d._id + ", ";
         }
