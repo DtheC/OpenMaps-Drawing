@@ -110,7 +110,7 @@ public class MapController : MonoBehaviour {
 				//MapNode toMapNode = GetMapNodeById (toNode);
 				if (fromNode != null && toNode != null) {
 					fromNode.AddNeighbouringNode (toNode);
-					toNode.AddNeighbouringNode (fromNode);
+					//toNode.AddNeighbouringNode (fromNode);
 					fromNode = toNode;
 				}
 			}

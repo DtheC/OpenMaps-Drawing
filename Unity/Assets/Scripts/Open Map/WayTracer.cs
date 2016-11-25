@@ -224,8 +224,6 @@ public class WayTracer : MonoBehaviour
         _parentEmitter = _w;
         _tracerMovement = _move;
 
-       
-
         InputsForBrain = new float[15] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
         _currentMapNode = null;
@@ -258,8 +256,9 @@ public class WayTracer : MonoBehaviour
 
     void GetRandomStartingNode()
     {
+       
         _currentMapNode = _parentEmitter.GetRandomRoadNode();
-        if (_currentMapNode != null)
+        if (_currentMapNode != null && _currentMapNode.ConnectedNodes.Count > 0)
         {
             _currentMapNodeId = _currentMapNode._id;
             gameObject.transform.position = _currentMapNode.LocationInUnits;
@@ -267,6 +266,7 @@ public class WayTracer : MonoBehaviour
         {
             GetRandomStartingNode();
         }
+        
     }
     
     void RewardBrain(float[] inputs, float[] outputs)
@@ -296,7 +296,7 @@ public class WayTracer : MonoBehaviour
     {
         //First we need to back propogate some learning based on the previous decision that was made by the network if it was a 'good' decision
         //We define good simply as if it's lowest need is now higher than it was at the time it last made a new connection decision
-        if (EntitiesPreviousNeeds.GetNeedValue(EntitiesPreviousNeeds.LowestNeed) < EntitiesNeeds.GetNeedValue(EntitiesNeeds.LowestNeed)){
+		if (EntitiesPreviousNeeds.GetNeedValue(EntitiesPreviousNeeds.LowestNeed) < EntitiesNeeds.GetNeedValue(EntitiesPreviousNeeds.LowestNeed)){
             //Value is higher- so it did something right.
             RewardBrain(InputsForBrain, EntitiesBrainOutputs);
         }
@@ -311,11 +311,12 @@ public class WayTracer : MonoBehaviour
         
         //Populate the inputs field with the first available connections
         //TODO: Populate with closest neighbours first (arrange neighbours by distance once on init of MapNode?)
-        if (_currentMapNode.ConnectedNodes.Count == 1)
+        if (_currentMapNode.ConnectedNodes.Count == 0)
         {
             GetRandomStartingNode();
+            return;
         }
-        for (int i = 0; i < _currentMapNode.ConnectedNodes.Count; i += 1)
+        for (int i = 0; i < _currentMapNode.ConnectedNodes.Count; i ++)
         {
             if (i*3 > InputsForBrain.Length)
             {
@@ -323,7 +324,7 @@ public class WayTracer : MonoBehaviour
             }
 			InputsForBrain[(i*3)] = _currentMapNode.ConnectedNodes[i].NeedAmounts[Needs.Food] + _currentMapNode.ConnectedNodes[i].NearbyNeedAmounts[Needs.Food];
 			InputsForBrain[(i*3) + 1] = _currentMapNode.ConnectedNodes[i].NeedAmounts[Needs.Water] + _currentMapNode.ConnectedNodes[i].NearbyNeedAmounts[Needs.Water];
-			InputsForBrain[(i*i) + 2] = _currentMapNode.ConnectedNodes[i].NeedAmounts[Needs.Shelter] + _currentMapNode.ConnectedNodes[i].NearbyNeedAmounts[Needs.Shelter];
+			InputsForBrain[(i*3) + 2] = _currentMapNode.ConnectedNodes[i].NeedAmounts[Needs.Shelter] + _currentMapNode.ConnectedNodes[i].NearbyNeedAmounts[Needs.Shelter];
         }
 
         //Set last input values to Entities current needs
@@ -357,15 +358,15 @@ public class WayTracer : MonoBehaviour
             }
         }
 
-		if (InputsForBrain [0] == 0 &&
-		    InputsForBrain [3] == 0 &&
-		    InputsForBrain [6] == 0 &&
-		    InputsForBrain [9] == 0) {
+		if (InputsForBrain [0] == 0f &&
+		    InputsForBrain [3] == 0f &&
+		    InputsForBrain [6] == 0f &&
+		    InputsForBrain [9] == 0f) {
 			_travellingToMapNode = _currentMapNode.GetRandomNeighbour ();
 		} else {
 
 			//Set next node to travel to
-			if (_currentMapNode.ConnectedNodes.Count >= nodeToSelect) {
+			if (_currentMapNode.ConnectedNodes.Count > nodeToSelect) {
 				_travellingToMapNode = _currentMapNode.ConnectedNodes [nodeToSelect];
 			} else {
 				Debug.Log ("Entity selected node that does not exist to travel to next. Will try again next Update...");

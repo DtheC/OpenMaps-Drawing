@@ -163,10 +163,11 @@ public class MapNode
 
     public MapNode GetRandomNeighbour()
     {
-        if (ConnectedNodes != null)
+		if (ConnectedNodes != null && ConnectedNodes.Count > 1)
         {
             System.Random rnd = new System.Random();
             int i = rnd.Next(ConnectedNodes.Count);
+			//Debug.LogError ("Index selected: "+i + "of "+ConnectedNodes.Count);
             return ConnectedNodes[i];
         }
         return null;
