@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 public class MapDrawer : MonoBehaviour {
 
-	public Transform NodeObject;
+	public GameObject NodeObject;
 	public bool DrawWaysToScreen = true;
 	public bool OnlyDrawHighways = true;
 
@@ -32,12 +32,16 @@ public class MapDrawer : MonoBehaviour {
 		List<Color32> _wayColours = new List<Color32>();
 	}
 
-	public void DrawNodes(IDictionary<double, float[]> nodeDict){
-		foreach (float[] n in nodeDict.Values) {
-			float x = MapMetaInformation.Instance.MapLatValue (n[0]);
-			float y = MapMetaInformation.Instance.MapLonValue (n[1]);
-			Instantiate (NodeObject, new Vector3 (x, 0, y), Quaternion.identity);
-		}
+	public void DrawNodes(){
+
+        foreach (MapNode n in _mapController.NodeList)
+        {
+            var newn = Instantiate(NodeObject, n.LocationInUnits, Quaternion.identity) as Transform;
+            
+            var gg = newn.gameObject.AddComponent<NodeDebug>();
+            gg.node = n;
+        }
+        
 	}
 
 	private void GenerateWayMesh(IList<MapWay> wayList){

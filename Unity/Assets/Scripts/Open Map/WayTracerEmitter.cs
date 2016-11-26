@@ -15,8 +15,7 @@ public class WayTracerEmitter : MonoBehaviour
 
     [SerializeField]
     public WayTracerMovementType MovementType;
-
-
+    
     public GameObject wayTracerObject;
     public MapController mapControl;
 

@@ -119,7 +119,7 @@ public class EntityNeeds
     {
         foreach (KeyValuePair<Needs, EntityNeed> n in _needs)
         {
-            n.Value.AddValue(-0.0001f);
+            n.Value.AddValue(-0.1f);
         }
     }
 }
@@ -166,9 +166,92 @@ public class EntityNeed
     }
 }
 
+public class EntityGenes : MonoBehaviour
+{
+    //TODO: Add genes for how quickly it uses these up
+    public float SightLength = 0.0f;
+    public float Speed = 0.0f;
+    public float PullFood = 0.0f;
+    public float PullWater = 0.0f;
+    public float PullShelter = 0.0f;
+    public float NodesVisited = -1.0f;
+    //Best to actually just hold them all in an array? Less user friendly...
+    public float[] Genes = new float[] { 0, 0, 0, 0, 0, -1.0f };
+
+    public EntityGenes() {
+		RandomiseGenes ();
+    }
+    public EntityGenes(float s, float sp, float pf, float pw, float ps)
+    {
+        SightLength = s;
+        Speed = sp;
+        PullFood = pf;
+        PullWater = pw;
+        PullShelter = ps;
+        NodesVisited = 0.0f;
+        Genes[5] = 0.0f;
+    }
+
+    public EntityGenes(float[] g)
+    {
+        Genes[0] = g[0];
+        Genes[1] = g[1];
+        Genes[2] = g[2];
+        Genes[3] = g[3];
+        Genes[4] = g[4];
+        NodesVisited = 0.0f;
+        Genes[5] = 0.0f;
+    }
+
+    void Start()
+    {
+        if (Genes[5] == -1.0f)
+        {
+            RandomiseGenes();
+        }
+    }
+
+    public void LogGenes()
+    {
+        foreach (var f in Genes)
+        {
+            Debug.Log(f);
+        }
+    }
+
+    public float[] MixGenes(float[] otherGenes)
+    {
+        float[] mixedGenes = new float[6];
+        for (int i = 0; i < otherGenes.Length; i++)
+        {
+            float r = Random.value;
+            if (r > 0.9) //10% chance of random mutation
+            {
+                mixedGenes[i] = Random.Range(0.00f, 1.00f);
+            }
+            else if (r > 0.45f)
+            {
+                mixedGenes[i] = otherGenes[i];
+            }
+            else
+            {
+                mixedGenes[i] = Genes[i];
+            }
+        }
+        return mixedGenes;
+    }
+    
+    public void RandomiseGenes()
+    {
+        for (int i = 0; i < Genes.Length-1; i++)
+        {
+            Genes[i] = Random.Range(0.00f, 1.00f);
+        }
+    }
+}
+
 public class WayTracer : MonoBehaviour
 {
-    
     public float[] InputsForBrain;
     public EntityNeeds EntitiesPreviousNeeds = new EntityNeeds();
     public float[] EntitiesBrainOutputs = new float[4];
@@ -191,6 +274,8 @@ public class WayTracer : MonoBehaviour
 
     private Material _entityColour;
     private TrailRenderer _entityTrail;
+
+    public EntityGenes Genetics = new EntityGenes();
 
     public MapNode TravellingToMapNode
     {
@@ -220,6 +305,10 @@ public class WayTracer : MonoBehaviour
 
     public void Init(MapController _m, WayTracerEmitter _w, WaytracerMovement _move)
     {
+		if (Genetics == null) {
+			Genetics = new EntityGenes ();
+		}
+
         _mapController = _m;
         _parentEmitter = _w;
         _tracerMovement = _move;
@@ -292,90 +381,61 @@ public class WayTracer : MonoBehaviour
         }   
     }
 
+    float GeneAlgorithm(float geneLevel, float currentNeedLevel, float nodeNeedLevel)
+    {
+        //Debug.Log(geneLevel + ", " + currentNeedLevel + ", " + nodeNeedLevel);
+        return Mathf.Sqrt((geneLevel * nodeNeedLevel)) + (currentNeedLevel * nodeNeedLevel);
+    }
+
     void GetNextConnection()
     {
-        //First we need to back propogate some learning based on the previous decision that was made by the network if it was a 'good' decision
-        //We define good simply as if it's lowest need is now higher than it was at the time it last made a new connection decision
-		if (EntitiesPreviousNeeds.GetNeedValue(EntitiesPreviousNeeds.LowestNeed) < EntitiesNeeds.GetNeedValue(EntitiesPreviousNeeds.LowestNeed)){
-            //Value is higher- so it did something right.
-            RewardBrain(InputsForBrain, EntitiesBrainOutputs);
-        }
-
-        //Copy the current Need Values to the Previous Needs Variable before we modify them
-        EntitiesPreviousNeeds.CopyEntitiesNeeds(EntitiesNeeds.EntitiesNeeds);
-
-        //When we get a new connection we are making a decision with the NeuralNetwork brain.
-        //We give it the need values of the four nearest neighbours and the entities current need values
-        //It will then return four values and whichever is the highest is which neighbour we will visit next.
-        InputsForBrain = new float[15] {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}; //Fifteen points as 3 types of Need * 4 locations and the Entities
-        
-        //Populate the inputs field with the first available connections
-        //TODO: Populate with closest neighbours first (arrange neighbours by distance once on init of MapNode?)
         if (_currentMapNode.ConnectedNodes.Count == 0)
         {
-            GetRandomStartingNode();
-            return;
-        }
-        for (int i = 0; i < _currentMapNode.ConnectedNodes.Count; i ++)
+            Debug.Log("HOW DID THIS HAPPEN?!");
+			_travellingToMapNode = ParentEmitter.GetRandomRoadNode ();
+		} 
+        else
         {
-            if (i*3 > InputsForBrain.Length)
+
+            //Pull in neightbours and make decision based on genes as to which to attend to next.
+            //For the three Needs, check each neighbour node to find which returns the highest value, then of those three go in the direction of
+            //the highest.
+
+            float hungerValue = 0;
+            float waterValue = 0;
+            float shelterValue = 0;
+            int hungerIndex = 0;
+            int waterIndex = 0;
+            int shelterIndex = 0;
+
+            for (int i = 0; i < _currentMapNode.ConnectedNodes.Count; i++)
             {
-                break;
+                float h = GeneAlgorithm(Genetics.Genes[2], EntitiesNeeds.GetNeedValue(Needs.Food), (_currentMapNode.ConnectedNodes[i].NeedAmounts[Needs.Food] + _currentMapNode.ConnectedNodes[i].NearbyNeedAmounts[Needs.Food]));
+                float w = GeneAlgorithm(Genetics.Genes[3], EntitiesNeeds.GetNeedValue(Needs.Water), (_currentMapNode.ConnectedNodes[i].NeedAmounts[Needs.Water] + _currentMapNode.ConnectedNodes[i].NearbyNeedAmounts[Needs.Water]));
+                float s = GeneAlgorithm(Genetics.Genes[4], EntitiesNeeds.GetNeedValue(Needs.Shelter), (_currentMapNode.ConnectedNodes[i].NeedAmounts[Needs.Shelter] + _currentMapNode.ConnectedNodes[i].NearbyNeedAmounts[Needs.Shelter]));
+                //Debug.Log("Gene values: " + h + ", " + w + ", " + s);
+
+                if (h > hungerValue)
+                {
+                    hungerValue = h;
+                    hungerIndex = i;
+                }
+                if (w > waterValue)
+                {
+                    waterValue = w;
+                    waterIndex = i;
+                }
+                if (s > shelterValue)
+                {
+                    shelterValue = s;
+                    shelterIndex = i;
+                }
             }
-			InputsForBrain[(i*3)] = _currentMapNode.ConnectedNodes[i].NeedAmounts[Needs.Food] + _currentMapNode.ConnectedNodes[i].NearbyNeedAmounts[Needs.Food];
-			InputsForBrain[(i*3) + 1] = _currentMapNode.ConnectedNodes[i].NeedAmounts[Needs.Water] + _currentMapNode.ConnectedNodes[i].NearbyNeedAmounts[Needs.Water];
-			InputsForBrain[(i*3) + 2] = _currentMapNode.ConnectedNodes[i].NeedAmounts[Needs.Shelter] + _currentMapNode.ConnectedNodes[i].NearbyNeedAmounts[Needs.Shelter];
+
+            int directionToMove = hungerValue > waterValue ? hungerValue > shelterValue ? hungerIndex : waterValue > shelterValue ? waterIndex : shelterIndex : waterValue > shelterValue ? waterIndex : shelterIndex; //Return the index of the largest value
+                                                                                                                                                                                                                       //Debug.Log(hungerValue + ", " + waterValue + ", "+shelterValue);
+            _travellingToMapNode = _currentMapNode.ConnectedNodes[directionToMove];
         }
-
-        //Set last input values to Entities current needs
-        InputsForBrain[12] = EntitiesNeeds.GetNeedValue(Needs.Food);
-        InputsForBrain[13] = EntitiesNeeds.GetNeedValue(Needs.Water);
-        InputsForBrain[14] = EntitiesNeeds.GetNeedValue(Needs.Shelter);
-        
-        Debug.Log(InputsForBrain);
-
-        //Set Brain Input Values
-        for (int i = 0; i < InputsForBrain.Length; i++)
-        {
-            ParentEmitter.EntityBrain.SetInput(i, InputsForBrain[i]);
-        }
-
-        //Feed values forward
-        ParentEmitter.EntityBrain.FeedForward();
-        //Get output values and make decision
-        EntitiesBrainOutputs[0] = ParentEmitter.EntityBrain.GetOutput(0);
-
-        float direction = EntitiesBrainOutputs[0]; //Get value of first Output node
-        int nodeToSelect = 0; //Default to the first node in the list
-        //4 directions, check the four output nodes
-        for (int i = 1; i < 4; i++)
-        {
-            EntitiesBrainOutputs[i] = ParentEmitter.EntityBrain.GetOutput(i);
-            if (ParentEmitter.EntityBrain.GetOutput(i) > direction)
-            {
-                direction = ParentEmitter.EntityBrain.GetOutput(i);
-                nodeToSelect = i;
-            }
-        }
-
-		if (InputsForBrain [0] == 0f &&
-		    InputsForBrain [3] == 0f &&
-		    InputsForBrain [6] == 0f &&
-		    InputsForBrain [9] == 0f) {
-			_travellingToMapNode = _currentMapNode.GetRandomNeighbour ();
-		} else {
-
-			//Set next node to travel to
-			if (_currentMapNode.ConnectedNodes.Count > nodeToSelect) {
-				_travellingToMapNode = _currentMapNode.ConnectedNodes [nodeToSelect];
-			} else {
-				Debug.Log ("Entity selected node that does not exist to travel to next. Will try again next Update...");
-			}
-		}
-
-        //Get all the connection nodes and find which has the highest value of each need
-        //var highestNeedNodes = _currentMapNode.GetHighestNeedNeighbours();
-
         //Add the values of the current location to the Entities' needs
         EntitiesNeeds.AddNeedsFromDictionary(_currentMapNode.NeedAmounts);
         EntitiesNeeds.AddNeedsFromDictionary(_currentMapNode.NearbyNeedAmounts);

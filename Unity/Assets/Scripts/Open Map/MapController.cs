@@ -34,7 +34,20 @@ public class MapController : MonoBehaviour {
 		}
 	}
 
-	private IList<MapNode> _nodeList;
+    public IList<MapNode> NodeList
+    {
+        get
+        {
+            return _nodeList;
+        }
+
+        set
+        {
+            _nodeList = value;
+        }
+    }
+
+    private IList<MapNode> _nodeList;
 
 	void Start () {
 		_mapXML = new XmlDocument ();
@@ -46,7 +59,7 @@ public class MapController : MonoBehaviour {
 		_ways = _mapXML.SelectNodes ("//way");
 
 		_wayList = new List<MapWay> ();
-		_nodeList = new List<MapNode> ();
+		NodeList = new List<MapNode> ();
 
 		InitWorldBounds ();
 		InitNodeList ();
@@ -54,15 +67,16 @@ public class MapController : MonoBehaviour {
 		InitNodeNeighbourLists ();
 		PropogateNeedsToNeighbours ();
 
-		//foreach (MapNode m in _nodeList) {
-		//	m.LogNeighbourNodes();
-		//}
+        //foreach (MapNode m in _nodeList) {
+        //	m.LogNeighbourNodes();
+        //}
 
-		if (DrawNodesToScreen) {
-		//	MapDrawer.DrawNodes (_nodeDictionary);
-		}
+        if (DrawNodesToScreen)
+        {
+            MapDrawer.DrawNodes ();
+        }
 
-			MapDrawer.DrawWays (_wayList);
+        MapDrawer.DrawWays (_wayList);
 
 		//NodeDrawer.DrawNodes (_nodeList);
 	}
@@ -73,7 +87,7 @@ public class MapController : MonoBehaviour {
 	/// Propogates the needs to neighbour nodes.
 	/// </summary>
 	void PropogateNeedsToNeighbours(){
-		foreach (MapNode n in _nodeList) {
+		foreach (MapNode n in NodeList) {
 			IDictionary<MapNode, float> nodes = GetNodesInRange (n, NeedPropogationRange);
 			foreach (KeyValuePair<MapNode, float> neighbour in nodes) {
 				//Construct a Needs dictionary to send
@@ -110,7 +124,7 @@ public class MapController : MonoBehaviour {
 				//MapNode toMapNode = GetMapNodeById (toNode);
 				if (fromNode != null && toNode != null) {
 					fromNode.AddNeighbouringNode (toNode);
-					//toNode.AddNeighbouringNode (fromNode);
+					toNode.AddNeighbouringNode (fromNode);
 					fromNode = toNode;
 				}
 			}
@@ -172,10 +186,10 @@ public class MapController : MonoBehaviour {
 			_newNode.SetFoodBasedOnTags ();
             _newNode.SetShelterBasedOnTags();
             //Debug.Log(_newNode.NeedAmounts[Needs.Food]);
-            _nodeList.Add(_newNode);
+            NodeList.Add(_newNode);
 			//_newNode.LogTags ("ater");
 		}
-		Debug.Log ("Node dictionary initalised with " + _nodeList.Count + " items.");
+		Debug.Log ("Node dictionary initalised with " + NodeList.Count + " items.");
 	}
 
 	void InitWorldBounds(){
@@ -225,12 +239,12 @@ public class MapController : MonoBehaviour {
 	}
 
 	public MapNode GetRandomNode(){
-		return _nodeList [Random.Range (0, _nodeList.Count)];
+		return NodeList [Random.Range (0, NodeList.Count)];
 	}
 
 	public double GetRandomNodeId(){
-		int randomNodeIndex = Random.Range (0, _nodeList.Count);
-		double selectedNode = _nodeList [randomNodeIndex]._id;
+		int randomNodeIndex = Random.Range (0, NodeList.Count);
+		double selectedNode = NodeList [randomNodeIndex]._id;
 		return selectedNode;
 	}
 		
@@ -240,7 +254,7 @@ public class MapController : MonoBehaviour {
 	/// <returns>The map node by identifier.</returns>
 	/// <param name="nodeId">Node identifier.</param>
 	public MapNode GetMapNodeById(double nodeId){
-		foreach (MapNode n in _nodeList) {
+		foreach (MapNode n in NodeList) {
 			if (n._id == nodeId){
 				return n;
 			}
@@ -250,7 +264,7 @@ public class MapController : MonoBehaviour {
 
 	public IDictionary<MapNode, float> GetNodesInRange(MapNode node, float range){
 		IDictionary<MapNode, float> nodes = new Dictionary<MapNode, float> ();
-		foreach (MapNode otherNode in _nodeList){
+		foreach (MapNode otherNode in NodeList){
 			//Check this isn't the current node to avoid duplication
 			if (node._id != otherNode._id) {
 				float dist = Vector3.Distance (node.LocationInUnits, otherNode.LocationInUnits);
