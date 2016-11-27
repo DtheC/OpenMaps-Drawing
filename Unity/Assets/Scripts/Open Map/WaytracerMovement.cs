@@ -21,7 +21,7 @@ public class WayTracerMovementRigid : WaytracerMovement
 
     public override void MoveTowardNewLocation()
     {
-        float step = Parent.speedOfMovement * Time.deltaTime;
+        float step = Parent.Genetics.Speed * Time.deltaTime;
 
         if (Parent.TravellingToMapNode == null)
         {

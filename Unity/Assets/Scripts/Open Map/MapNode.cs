@@ -13,8 +13,11 @@ public class MapNode
 
     public IList<MapNode> ConnectedNodes { get; set; }
 
+    public IDictionary<Needs, float> MaxNeeds;
     public IDictionary<Needs, float> NeedAmounts;
     public IDictionary<Needs, float> NearbyNeedAmounts;
+
+    public bool NeedsDepleted = false;
 
     private Vector3? _locationInUnits;
     public Vector3 LocationInUnits
@@ -44,10 +47,29 @@ public class MapNode
         //Set default values for each need
         NeedAmounts = new Dictionary<Needs, float>();
         NearbyNeedAmounts = new Dictionary<Needs, float>();
+        MaxNeeds = new Dictionary<Needs, float>();
         foreach (Needs need in System.Enum.GetValues(typeof(Needs)))
         {
+            MaxNeeds.Add(need, 0.0f);
             NeedAmounts.Add(need, 0.0f);
             NearbyNeedAmounts.Add(need, 0.0f);
+        }
+    }
+
+    public void ReplenishNeeds()
+    {
+        if (NeedsDepleted)
+        {
+            foreach (KeyValuePair<Needs, float> n in MaxNeeds)
+            {
+                if (n.Value > 0)
+                {
+                    MaxNeeds[n.Key] -= 0.005f;
+                } else
+                {
+                    NeedsDepleted = false;
+                }
+            }
         }
     }
 
@@ -102,6 +124,11 @@ public class MapNode
                 }
             }
         }
+        MaxNeeds[Needs.Water] = NeedAmounts[Needs.Water];
+        if (NeedAmounts[Needs.Water] > 0)
+        {
+            Debug.Log("Water: " + NeedAmounts[Needs.Water]);
+        }
     }
 
     public void SetFoodBasedOnTags()
@@ -119,6 +146,11 @@ public class MapNode
                 }
             }
         }
+        MaxNeeds[Needs.Food] = NeedAmounts[Needs.Food];
+        if (NeedAmounts[Needs.Food] > 0)
+        {
+            Debug.Log("Food: " + NeedAmounts[Needs.Food]);
+        }
     }
 
     public void SetShelterBasedOnTags()
@@ -135,6 +167,11 @@ public class MapNode
                     }
                 }
             }
+        }
+        MaxNeeds[Needs.Shelter] = NeedAmounts[Needs.Shelter];
+        if (NeedAmounts[Needs.Shelter] > 0)
+        {
+            Debug.Log("Shelter: " + NeedAmounts[Needs.Shelter]);
         }
     }
 
@@ -207,5 +244,14 @@ public class MapNode
             output += d._id + ", ";
         }
         Debug.Log(output);
+    }
+
+    public void ConsumeNeeds()
+    {
+        //NeedsDepleted = true;
+      foreach (var n in MaxNeeds)
+        {
+            //MaxNeeds[n.Key] += 0.01f;
+        }
     }
 }

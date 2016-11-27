@@ -16,7 +16,7 @@ public class MapController : MonoBehaviour {
 	public NodeDrawer NodeDrawer;
 	public MapDrawer MapDrawer;
 
-	public float NeedPropogationRange = 0.1f;
+	public float NeedPropogationRange = 0f;
 
 	private XmlDocument _mapXML;
 	private XmlNodeList _nodes;
@@ -26,7 +26,7 @@ public class MapController : MonoBehaviour {
 	private float _minLon = float.MaxValue;
 	private float _maxLat = float.MaxValue;
 	private float _maxLon = float.MaxValue;
-
+    
 	private IList<MapWay> _wayList;
 	public IList<MapWay> WayList {
 		get {
@@ -80,6 +80,16 @@ public class MapController : MonoBehaviour {
 
 		//NodeDrawer.DrawNodes (_nodeList);
 	}
+
+    /*
+    void Update()
+    {
+        foreach (MapNode n in _nodeList)
+        {
+            n.ReplenishNeeds();
+        }
+    }
+    */
 
 #region Init Functions
 

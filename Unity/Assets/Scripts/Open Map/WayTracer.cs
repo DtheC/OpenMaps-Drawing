@@ -55,9 +55,53 @@ public class EntityNeeds
     public EntityNeeds()
     {
         _needs = new Dictionary<Needs, EntityNeed>();
-        _needs.Add(Needs.Food, new EntityNeed(0.0f));
-        _needs.Add(Needs.Water, new EntityNeed(0.0f));
-        _needs.Add(Needs.Shelter, new EntityNeed(0.0f));
+        _needs.Add(Needs.Food, new EntityNeed(0.5f));
+        _needs.Add(Needs.Water, new EntityNeed(0.5f));
+        _needs.Add(Needs.Shelter, new EntityNeed(0.5f));
+    }
+
+    public bool Dead()
+    {
+        int count = 0;
+        foreach (var n in _needs)
+        {
+            if (n.Value.GetValue() <= 0.001f)
+            {
+                count++;
+            }
+        }
+
+        if (count == _needs.Count)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    public bool HasPressingNeed(float value)
+    {
+        foreach (var n in _needs)
+        {
+            if (n.Value.GetValue() < value)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public List<Needs> GetPressingNeeds(float value)
+    {
+        List<Needs> r = new List<Needs>();
+        foreach(var n in _needs)
+        {
+            if (n.Value.GetValue() < value)
+            {
+                r.Add(n.Key);
+            }
+        }
+        return r;
     }
 
     public float GetNeedValue(Needs need)
@@ -111,16 +155,29 @@ public class EntityNeeds
     {
         foreach (KeyValuePair<Needs, float> n in nodeNeeds)
         {
+            //Debug.Log(n.Key + " / " + n.Value);
             AddToEntityNeed(n.Key, n.Value);
         }
     }
 
-    public void UseNeeds() //Should eventually correspond with evolved values for how quickly it uses energy/food/water etc.
+    public void UseNeeds(float metabolism) //Should eventually correspond with evolved values for how quickly it uses energy/food/water etc.
     {
         foreach (KeyValuePair<Needs, EntityNeed> n in _needs)
         {
-            n.Value.AddValue(-0.1f);
+            n.Value.AddValue(-metabolism);
         }
+    }
+
+    public override string ToString()
+    {
+        string r = "";
+
+        foreach (KeyValuePair<Needs, EntityNeed> n in _needs)
+        {
+            r += " | Need: " + n.Key + " / " + n.Value.GetValue();
+        }
+
+        return r;
     }
 }
 public class EntityNeed
@@ -166,57 +223,57 @@ public class EntityNeed
     }
 }
 
-public class EntityGenes : MonoBehaviour
+public class EntityGenes
 {
-    //TODO: Add genes for how quickly it uses these up
-    public float SightLength = 0.0f;
-    public float Speed = 0.0f;
-    public float PullFood = 0.0f;
-    public float PullWater = 0.0f;
-    public float PullShelter = 0.0f;
-    public float NodesVisited = -1.0f;
-    //Best to actually just hold them all in an array? Less user friendly...
-    public float[] Genes = new float[] { 0, 0, 0, 0, 0, -1.0f };
+    public float Speed = Random.Range(1.00f, 5.00f); //How quickly it moves
+    public float PullFood = Random.Range(0.00f, 1.00f); //How much it wants to find food
+    public float PullWater = Random.Range(0.00f, 1.00f); //How much it wants to find water
+    public float PullShelter = Random.Range(0.00f, 1.00f); //How much it wants to find shelter
+    public float DesperationValue = Random.Range(0.00f, 1.00f); //How low a need has to be before it panics and runs around looking to meet it
+    public float Metabolism = Random.Range(0.00f, 1.00f); //How quickly it chews through its reserves of needs
+
+    private float[] genes;
+    public float[] Genes
+    {
+        get
+        {
+            return new float[] {Speed, PullFood, PullWater, PullShelter, DesperationValue, Metabolism};
+        }
+
+        set
+        {
+            Speed = value[0];
+            PullFood = value[1];
+            PullWater = value[2];
+            PullShelter = value[3];
+            DesperationValue = value[4];
+            Metabolism = value[5];
+        }
+    }
 
     public EntityGenes() {
-		RandomiseGenes ();
-    }
-    public EntityGenes(float s, float sp, float pf, float pw, float ps)
-    {
-        SightLength = s;
-        Speed = sp;
-        PullFood = pf;
-        PullWater = pw;
-        PullShelter = ps;
-        NodesVisited = 0.0f;
-        Genes[5] = 0.0f;
+        //Debug.Log(Metabolism);
     }
 
     public EntityGenes(float[] g)
     {
-        Genes[0] = g[0];
-        Genes[1] = g[1];
-        Genes[2] = g[2];
-        Genes[3] = g[3];
-        Genes[4] = g[4];
-        NodesVisited = 0.0f;
-        Genes[5] = 0.0f;
+        Speed = g[0];
+        PullFood = g[1];
+        PullWater = g[2];
+        PullShelter = g[3];
+        DesperationValue = g[4];
+        Metabolism = g[5];
     }
+    
 
-    void Start()
+    public override string ToString()
     {
-        if (Genes[5] == -1.0f)
+        string output = "";
+        for(int i = 0; i < Genes.Length; i++)
         {
-            RandomiseGenes();
+            output += "Gene " + i + ": " + Genes[i];
         }
-    }
-
-    public void LogGenes()
-    {
-        foreach (var f in Genes)
-        {
-            Debug.Log(f);
-        }
+        return output;
     }
 
     public float[] MixGenes(float[] otherGenes)
@@ -224,12 +281,20 @@ public class EntityGenes : MonoBehaviour
         float[] mixedGenes = new float[6];
         for (int i = 0; i < otherGenes.Length; i++)
         {
-            float r = Random.value;
-            if (r > 0.9) //10% chance of random mutation
+            float r = Random.Range(0.00f, 1.00f);
+            if (r > 0.99f) //1% chance of random mutation
             {
-                mixedGenes[i] = Random.Range(0.00f, 1.00f);
+                if (i == 0)
+                {
+                    mixedGenes[i] = Random.Range(1.00f, 5.00f);
+                }
+                else
+                {
+                    mixedGenes[i] = Random.Range(0.00f, 1.00f);
+                }
             }
-            else if (r > 0.45f)
+
+            else if (r > 0.5f && r < 0.99f)
             {
                 mixedGenes[i] = otherGenes[i];
             }
@@ -240,12 +305,35 @@ public class EntityGenes : MonoBehaviour
         }
         return mixedGenes;
     }
-    
-    public void RandomiseGenes()
+   
+}
+
+public class NodeTracker
+{
+    IList _visitedNodes = new List<double>();
+
+    public void AddNode(double id)
     {
-        for (int i = 0; i < Genes.Length-1; i++)
+        if (_visitedNodes.Count > 10)
         {
-            Genes[i] = Random.Range(0.00f, 1.00f);
+            _visitedNodes.RemoveAt(0);
+            _visitedNodes.Add(id);
+        }
+        else
+        {
+            _visitedNodes.Add(id);
+        }
+    }
+
+    public bool NodeVisited(double id)
+    {
+        if (_visitedNodes.Contains(id))
+        {
+            return true;
+        }
+        else
+        {
+            return false;
         }
     }
 }
@@ -258,9 +346,8 @@ public class WayTracer : MonoBehaviour
 
     public EntityNeeds EntitiesNeeds = new EntityNeeds();
     private WaytracerMovement _tracerMovement;
-
-    public float speedOfMovement = 2.0f;
-    public float triggerDistance = 0.1f;
+    
+    public float triggerDistance = 0.01f;
 
     private MapController _mapController;
     private WayTracerEmitter _parentEmitter;
@@ -276,6 +363,7 @@ public class WayTracer : MonoBehaviour
     private TrailRenderer _entityTrail;
 
     public EntityGenes Genetics = new EntityGenes();
+    public NodeTracker NodeTracker = new NodeTracker();
 
     public MapNode TravellingToMapNode
     {
@@ -303,12 +391,40 @@ public class WayTracer : MonoBehaviour
         }
     }
 
+    public void Init(MapController _m, WayTracerEmitter _w, WaytracerMovement _move, double _startingNode)
+    {
+
+        //Debug.Log("New Entity created!");
+        //Debug.Log(Genetics.ToString());
+
+        _mapController = _m;
+        _parentEmitter = _w;
+        _tracerMovement = _move;
+
+        InputsForBrain = new float[15] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+
+        _currentMapNode = null;
+        _travellingToMapNode = null;
+
+        _entityColour = GetComponent<Renderer>().material;
+        _entityTrail = GetComponent<TrailRenderer>();
+
+        _currentMapNode = _mapController.GetMapNodeById(_startingNode);
+        _currentMapNodeId = _currentMapNode._id;
+        gameObject.transform.position = _currentMapNode.LocationInUnits;
+        //Assign a connected node to move toward
+        GetNextConnection();
+    }
+
     public void Init(MapController _m, WayTracerEmitter _w, WaytracerMovement _move)
     {
-		if (Genetics == null) {
-			Genetics = new EntityGenes ();
+        if (Genetics == null)
+        {
+            Genetics = new EntityGenes ();
 		}
-
+            //Debug.Log("New Entity created!");
+            //Debug.Log(Genetics.ToString());
+        
         _mapController = _m;
         _parentEmitter = _w;
         _tracerMovement = _move;
@@ -329,13 +445,22 @@ public class WayTracer : MonoBehaviour
 
     void Update()
     {
+        /*
+        foreach (MapNode n in _currentMapNode.ConnectedNodes)
+        {
+            Debug.DrawLine(_currentMapNode.LocationInUnits, n.LocationInUnits, new Color(255, 0, 255), 10f);
+        }
+        */
         MoveTowardNewLocation();
         if (Vector3.Distance(transform.position, _travellingToMapNode.LocationInUnits) < triggerDistance)
         {
             _currentMapNode = _travellingToMapNode;
             GetNextConnection();
         }
-        EntitiesNeeds.UseNeeds();
+       // EntitiesNeeds.AddNeedsFromDictionary(_currentMapNode.NeedAmounts);
+        EntitiesNeeds.UseNeeds(Genetics.Metabolism);
+
+        CheckIfDead();
     }
 
     void MoveTowardNewLocation()
@@ -345,7 +470,6 @@ public class WayTracer : MonoBehaviour
 
     void GetRandomStartingNode()
     {
-       
         _currentMapNode = _parentEmitter.GetRandomRoadNode();
         if (_currentMapNode != null && _currentMapNode.ConnectedNodes.Count > 0)
         {
@@ -354,66 +478,76 @@ public class WayTracer : MonoBehaviour
         } else
         {
             GetRandomStartingNode();
-        }
-        
-    }
-    
-    void RewardBrain(float[] inputs, float[] outputs)
-    {
-        double error = 1d;
-        int c = 0;
-        while ((error > 0.1) && (c < 500))
-        {
-            c++;
-            for (int i = 0; i < inputs.Length; i++)
-            {
-                ParentEmitter.EntityBrain.SetInput(i, inputs[i]);
-            }
-
-            for (int i = 0; i < outputs.Length; i++)
-            {
-                ParentEmitter.EntityBrain.SetDesiredOutput(i, outputs[i]);
-            }
-
-            ParentEmitter.EntityBrain.FeedForward();
-            error = ParentEmitter.EntityBrain.CalculateError();
-            ParentEmitter.EntityBrain.BackPropagate();
         }   
     }
 
     float GeneAlgorithm(float geneLevel, float currentNeedLevel, float nodeNeedLevel)
     {
         //Debug.Log(geneLevel + ", " + currentNeedLevel + ", " + nodeNeedLevel);
-        return Mathf.Sqrt((geneLevel * nodeNeedLevel)) + (currentNeedLevel * nodeNeedLevel);
+        //return Mathf.Sqrt((geneLevel * nodeNeedLevel)) + (currentNeedLevel * nodeNeedLevel);
+        return (geneLevel * Mathf.Sqrt(nodeNeedLevel)) + (1 - currentNeedLevel);
     }
 
     void GetNextConnection()
     {
+        //if (EntitiesNeeds.EntitiesNeeds[EntitiesNeeds.HighestNeed].GetValue() < 0.4)
+        //{
+        //    _travellingToMapNode = _currentMapNode.GetRandomNeighbour();
+        //} else
+
         if (_currentMapNode.ConnectedNodes.Count == 0)
         {
-            Debug.Log("HOW DID THIS HAPPEN?!");
-			_travellingToMapNode = ParentEmitter.GetRandomRoadNode ();
-		} 
+            Debug.Log("No connected nodes. This shouldn't happen!");
+            //TODO: Destroy this entity
+            ParentEmitter.EntityDies(this);
+            Destroy(gameObject);
+        }
+        else if (_currentMapNode.ConnectedNodes.Count == 1)
+        {
+            //Debug.Log("Only 1 node");
+            _travellingToMapNode = _currentMapNode.ConnectedNodes[0];
+        }
         else
         {
 
+           // _travellingToMapNode = _currentMapNode.GetRandomNeighbour();
+
+            
             //Pull in neightbours and make decision based on genes as to which to attend to next.
             //For the three Needs, check each neighbour node to find which returns the highest value, then of those three go in the direction of
             //the highest.
 
+            //We want to find the one that can cover most needs, but also discount that need from the equation if it is low enough
+            //and also go directly to that ignoring the others if it is high enough.
+            //To do this we weight the decision based on how pressing the need is
+
+            //Institute a rule whereby if there's a pressing need and you can't find it then run randomly for a few nodes to get to a new area.
+
             float hungerValue = 0;
             float waterValue = 0;
             float shelterValue = 0;
-            int hungerIndex = 0;
-            int waterIndex = 0;
-            int shelterIndex = 0;
+            int hungerIndex = Random.Range(0, _currentMapNode.ConnectedNodes.Count);
+            int waterIndex = Random.Range(0, _currentMapNode.ConnectedNodes.Count);
+            int shelterIndex = Random.Range(0, _currentMapNode.ConnectedNodes.Count);
 
             for (int i = 0; i < _currentMapNode.ConnectedNodes.Count; i++)
             {
-                float h = GeneAlgorithm(Genetics.Genes[2], EntitiesNeeds.GetNeedValue(Needs.Food), (_currentMapNode.ConnectedNodes[i].NeedAmounts[Needs.Food] + _currentMapNode.ConnectedNodes[i].NearbyNeedAmounts[Needs.Food]));
-                float w = GeneAlgorithm(Genetics.Genes[3], EntitiesNeeds.GetNeedValue(Needs.Water), (_currentMapNode.ConnectedNodes[i].NeedAmounts[Needs.Water] + _currentMapNode.ConnectedNodes[i].NearbyNeedAmounts[Needs.Water]));
-                float s = GeneAlgorithm(Genetics.Genes[4], EntitiesNeeds.GetNeedValue(Needs.Shelter), (_currentMapNode.ConnectedNodes[i].NeedAmounts[Needs.Shelter] + _currentMapNode.ConnectedNodes[i].NearbyNeedAmounts[Needs.Shelter]));
-                //Debug.Log("Gene values: " + h + ", " + w + ", " + s);
+                float weight = 0f;
+                if (NodeTracker.NodeVisited(_currentMapNode.ConnectedNodes[i]._id))
+                {
+                    //Debug.Log("Weighted against index: " + i);
+                    weight = 0.01f;
+                }
+                float h = GeneAlgorithm(Genetics.Genes[1], EntitiesNeeds.GetNeedValue(Needs.Food), (_currentMapNode.ConnectedNodes[i].NeedAmounts[Needs.Food] + _currentMapNode.ConnectedNodes[i].NearbyNeedAmounts[Needs.Food] - _currentMapNode.ConnectedNodes[i].MaxNeeds[Needs.Food]));
+                float w = GeneAlgorithm(Genetics.Genes[2], EntitiesNeeds.GetNeedValue(Needs.Water), (_currentMapNode.ConnectedNodes[i].NeedAmounts[Needs.Water] + _currentMapNode.ConnectedNodes[i].NearbyNeedAmounts[Needs.Water] - _currentMapNode.ConnectedNodes[i].MaxNeeds[Needs.Water]));
+                float s = GeneAlgorithm(Genetics.Genes[3], EntitiesNeeds.GetNeedValue(Needs.Shelter), (_currentMapNode.ConnectedNodes[i].NeedAmounts[Needs.Shelter] + _currentMapNode.ConnectedNodes[i].NearbyNeedAmounts[Needs.Shelter] - _currentMapNode.ConnectedNodes[i].MaxNeeds[Needs.Shelter]));
+                //Debug.Log("Index: "+i+". Gene values: " + h + ", " + w + ", " + s);
+
+                h = h * weight;
+                w = w * weight;
+                s = s * weight;
+
+                //Debug.Log("Index: " + i + ". Gene values: " + h + ", " + w + ", " + s+ "After weighting is applied");
 
                 if (h > hungerValue)
                 {
@@ -432,14 +566,85 @@ public class WayTracer : MonoBehaviour
                 }
             }
 
-            int directionToMove = hungerValue > waterValue ? hungerValue > shelterValue ? hungerIndex : waterValue > shelterValue ? waterIndex : shelterIndex : waterValue > shelterValue ? waterIndex : shelterIndex; //Return the index of the largest value
-                                                                                                                                                                                                                       //Debug.Log(hungerValue + ", " + waterValue + ", "+shelterValue);
+            int directionToMove = Random.Range(0, _currentMapNode.ConnectedNodes.Count);
+
+            if (EntitiesNeeds.HasPressingNeed(Genetics.DesperationValue))
+            {
+                
+                //Desperation mode should take into account visited nodes.
+                //Debug.Log("Desperation mode activated");
+                for (int i = 0; i < _currentMapNode.ConnectedNodes.Count; i++)
+                {
+                    if (!NodeTracker.NodeVisited(_currentMapNode.ConnectedNodes[i]._id)){
+                        directionToMove = i;
+                        if (Random.value > 0.5f)
+                        {
+                            break;
+                        }
+                    }
+                }
+
+
+                //directionToMove = Random.Range(0, _currentMapNode.ConnectedNodes.Count);
+                
+                //directionToMove = hungerValue > waterValue ? hungerValue > shelterValue ? hungerIndex : waterValue > shelterValue ? waterIndex : shelterIndex : waterValue > shelterValue ? waterIndex : shelterIndex; //Return the index of the largest value
+                /*
+                List<Needs> x = EntitiesNeeds.GetPressingNeeds(Genetics.DesperationValue);
+                //Run toward the most pressing need
+                switch (x[0])
+                {
+                    case Needs.Water:
+                        directionToMove = waterIndex;
+                        break;
+                    case Needs.Food:
+                        directionToMove = hungerIndex;
+                        break;
+                    case Needs.Shelter:
+                        directionToMove = shelterIndex;
+                        break;
+                    default:
+                        break;
+                }
+                */
+                
+            } else
+            {
+
+                if (hungerValue > waterValue && hungerValue > shelterValue)
+                {
+                    directionToMove = hungerIndex;
+                }
+                if (waterValue > hungerValue && waterValue > shelterValue)
+                {
+                    directionToMove = waterIndex;
+                }
+                if (shelterValue > waterValue && shelterValue > hungerValue)
+                {
+                    directionToMove = shelterIndex;
+                }
+                //directionToMove = hungerValue > waterValue ? hungerValue > shelterValue ? hungerIndex : waterValue > shelterValue ? waterIndex : shelterIndex : waterValue > shelterValue ? waterIndex : shelterIndex; //Return the index of the largest value
+            }
+
+            
+            
+            
+            //Debug.Log("Direction chosen: " + directionToMove+" of a possible "+_currentMapNode.ConnectedNodes.Count);
+            //Debug.Log("Values at play were: HungerValue/Index: " + hungerValue + "/" + hungerIndex + " WaterValue/Index: " + waterValue + "/" + waterIndex + "ShelterValue/Index: " + shelterValue + "/" + shelterIndex);
+                //Debug.Log(hungerValue + ", " + waterValue + ", "+shelterValue);
             _travellingToMapNode = _currentMapNode.ConnectedNodes[directionToMove];
+            NodeTracker.AddNode(_currentMapNode.ConnectedNodes[directionToMove]._id);
+            //Debug.Log(_currentMapNode.ConnectedNodes[directionToMove]._id);
+    
         }
+
         //Add the values of the current location to the Entities' needs
+        //_currentMapNode.ConsumeNeeds();
         EntitiesNeeds.AddNeedsFromDictionary(_currentMapNode.NeedAmounts);
-        EntitiesNeeds.AddNeedsFromDictionary(_currentMapNode.NearbyNeedAmounts);
-        
+
+
+        //EntitiesNeeds.AddNeedsFromDictionary(_currentMapNode.NearbyNeedAmounts);
+        //Debug.Log(EntitiesNeeds.ToString());
+
         //Update the colour based on the needs
         UpdateColour();
 
@@ -455,7 +660,26 @@ public class WayTracer : MonoBehaviour
         }
         else
         {
-            _travellingToMapNode = ParentEmitter.GetRandomRoadNode();
+            //Something went wrong- kill this Entity
+            ParentEmitter.EntityDies(this);
+            Destroy(gameObject);
+        }
+        CheckIfDead();
+    }
+
+    public void Instakill()
+    {
+        ParentEmitter.EntityDies(this);
+        DestroyImmediate(gameObject);
+    }
+
+    void CheckIfDead()
+    {
+        if (EntitiesNeeds.Dead())
+        {
+            //Goodbye :(
+            ParentEmitter.EntityDies(this);
+            Destroy(gameObject);
         }
     }
 
