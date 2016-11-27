@@ -96,10 +96,13 @@ public class MapController : MonoBehaviour {
 	/// <summary>
 	/// Propogates the needs to neighbour nodes.
 	/// </summary>
-	void PropogateNeedsToNeighbours(){
-		foreach (MapNode n in NodeList) {
+	void PropogateNeedsToNeighbours()
+    {
+		foreach (MapNode n in NodeList)
+        {
 			IDictionary<MapNode, float> nodes = GetNodesInRange (n, NeedPropogationRange);
-			foreach (KeyValuePair<MapNode, float> neighbour in nodes) {
+			foreach (KeyValuePair<MapNode, float> neighbour in nodes)
+            {
 				//Construct a Needs dictionary to send
 				Dictionary<Needs, float> neighbourValues = new Dictionary<Needs, float>();
 				//Set the values in the dictionary to neightbour distance / needproprange * n.NeedAmounts
@@ -144,22 +147,31 @@ public class MapController : MonoBehaviour {
 
 	void InitWayList(){
 		IList<MapWay> _tempWayList = new List<MapWay>();
-		foreach (XmlNode w in _ways) {
+		foreach (XmlNode w in _ways)
+        {
 			double wayId = double.Parse (w.Attributes.GetNamedItem ("id").Value);
 			IList<MapNode> wayNodes = new List<MapNode> ();
 			XmlNodeList nd = w.SelectNodes ("nd");
-			foreach (XmlNode wayNode in nd) {
+			foreach (XmlNode wayNode in nd)
+            {
 				MapNode nextNode = GetMapNodeById(double.Parse (wayNode.Attributes.GetNamedItem ("ref").Value));
-				if (nextNode != null){
+				if (nextNode != null)
+                {
 					wayNodes.Add (nextNode);
 				}
 			}
 			nd = w.SelectNodes ("tag");
+            if (!IsRoad(nd))
+            {
+                continue;
+            }
 			IDictionary<string, IList<string>> wayTags = new Dictionary<string, IList<string>>();
-			foreach (XmlNode aTag in nd) {
+			foreach (XmlNode aTag in nd)
+            {
 				string kValue = aTag.Attributes.GetNamedItem("k").Value;
 				string vValue = aTag.Attributes.GetNamedItem("v").Value;
-				if (!wayTags.ContainsKey(kValue)){
+				if (!wayTags.ContainsKey(kValue))
+                {
 					wayTags[kValue] = new List<string>();
 				}
 				wayTags[kValue].Add(vValue);
@@ -173,15 +185,38 @@ public class MapController : MonoBehaviour {
 		_wayList = _tempWayList;
 	}
 
+    bool IsRoad(XmlNodeList list)
+    {
+        foreach (XmlNode aTag in list)
+        {
+            string kValue = aTag.Attributes.GetNamedItem("k").Value;
+            if (kValue == "highway")
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
 	void InitNodeList(){
 		foreach (XmlNode n in _nodes) {
 			float x = float.Parse (n.Attributes.GetNamedItem ("lat").Value);
 			float y = float.Parse (n.Attributes.GetNamedItem ("lon").Value);
-			MapNode _newNode = new MapNode(double.Parse (n.Attributes.GetNamedItem ("id").Value), x, y);
+            //Get the tag list of the node
+            XmlNodeList nd = n.SelectNodes("tag");
+            /*
+            //If the node isnt a road, then ignore it.
+            if (!IsRoad(nd))
+            {
+                continue;
+            }
+            */
+
+            MapNode _newNode = new MapNode(double.Parse (n.Attributes.GetNamedItem ("id").Value), x, y);
 			_newNode.updateUnitLocationVectors();
 
 			//Get the tag list of the node
-			XmlNodeList nd = n.SelectNodes ("tag");
+			//XmlNodeList nd = n.SelectNodes ("tag");
 			IDictionary<string, IList<string>> nodeTags = new Dictionary<string, IList<string>>();
 			foreach (XmlNode aTag in nd) {
 				string kValue = aTag.Attributes.GetNamedItem("k").Value;

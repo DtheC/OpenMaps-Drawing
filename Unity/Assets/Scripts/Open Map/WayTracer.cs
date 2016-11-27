@@ -364,6 +364,7 @@ public class WayTracer : MonoBehaviour
 
     public EntityGenes Genetics = new EntityGenes();
     public NodeTracker NodeTracker = new NodeTracker();
+    public TrailRenderer trail;
 
     public MapNode TravellingToMapNode
     {
@@ -407,7 +408,6 @@ public class WayTracer : MonoBehaviour
         _travellingToMapNode = null;
 
         _entityColour = GetComponent<Renderer>().material;
-        _entityTrail = GetComponent<TrailRenderer>();
 
         _currentMapNode = _mapController.GetMapNodeById(_startingNode);
         _currentMapNodeId = _currentMapNode._id;
@@ -435,7 +435,6 @@ public class WayTracer : MonoBehaviour
         _travellingToMapNode = null;
 
         _entityColour = GetComponent<Renderer>().material;
-        _entityTrail = GetComponent<TrailRenderer>();
 
         //Assign random starting location
         GetRandomStartingNode();
@@ -457,7 +456,7 @@ public class WayTracer : MonoBehaviour
             _currentMapNode = _travellingToMapNode;
             GetNextConnection();
         }
-       // EntitiesNeeds.AddNeedsFromDictionary(_currentMapNode.NeedAmounts);
+        //EntitiesNeeds.AddNeedsFromDictionary(_currentMapNode.NeedAmounts);
         EntitiesNeeds.UseNeeds(Genetics.Metabolism);
 
         CheckIfDead();
@@ -640,9 +639,7 @@ public class WayTracer : MonoBehaviour
         //Add the values of the current location to the Entities' needs
         //_currentMapNode.ConsumeNeeds();
         EntitiesNeeds.AddNeedsFromDictionary(_currentMapNode.NeedAmounts);
-
-
-        //EntitiesNeeds.AddNeedsFromDictionary(_currentMapNode.NearbyNeedAmounts);
+        EntitiesNeeds.AddNeedsFromDictionary(_currentMapNode.NearbyNeedAmounts);
         //Debug.Log(EntitiesNeeds.ToString());
 
         //Update the colour based on the needs
@@ -686,7 +683,7 @@ public class WayTracer : MonoBehaviour
     void UpdateColour()
     {
         _entityColour.color = new Color(EntitiesNeeds.GetNeedValue(Needs.Food), EntitiesNeeds.GetNeedValue(Needs.Shelter), EntitiesNeeds.GetNeedValue(Needs.Water));
-        Color trailCol = Color.Lerp(_entityTrail.material.GetColor("_TintColor"), _entityColour.color, 0.1f);
-        _entityTrail.material.SetColor("_TintColor", trailCol);
+        Color trailCol = Color.Lerp(trail.material.GetColor("_TintColor"), _entityColour.color, 0.1f);
+        trail.material.SetColor("_TintColor", trailCol);
     }
 }

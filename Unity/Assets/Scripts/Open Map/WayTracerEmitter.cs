@@ -11,6 +11,7 @@ public class WayTracerEmitter : MonoBehaviour
 
     public int GenerationCount = 0;
     public int EntitiesPerGeneration = 500;
+    public int NextGenNumber = 20;
     private int _currentEntities = 0;
     List<WayTracer> _entities = new List<WayTracer>();
     
@@ -104,7 +105,7 @@ public class WayTracerEmitter : MonoBehaviour
         List<WayTracer> oldGeneration = new List<WayTracer>(_entities);
         Debug.Log("Oldgen: "+oldGeneration.Count);
         
-            oldGeneration.RemoveRange(0, oldGeneration.Count - 20);
+            oldGeneration.RemoveRange(0, oldGeneration.Count - NextGenNumber);
         
         for (int i = 0; i < oldGeneration.Count; i++)
         {
@@ -128,6 +129,10 @@ public class WayTracerEmitter : MonoBehaviour
                 _ww.Genetics = new EntityGenes(newGenes);
                 newGeneration.Add(_ww);
             }
+            if (newGeneration.Count > EntitiesPerGeneration)
+            {
+                break;
+            }
         }
 
         for (int i = 0; i < _entities.Count; i++)
@@ -146,7 +151,7 @@ public class WayTracerEmitter : MonoBehaviour
         _currentEntities--;
         _entities.Remove(deadWaytracer);
 
-        if (_currentEntities == 20)
+        if (_currentEntities == NextGenNumber)
         {
             NewGen();
         }

@@ -127,7 +127,7 @@ public class MapNode
         MaxNeeds[Needs.Water] = NeedAmounts[Needs.Water];
         if (NeedAmounts[Needs.Water] > 0)
         {
-            Debug.Log("Water: " + NeedAmounts[Needs.Water]);
+            //Debug.Log("Water: " + NeedAmounts[Needs.Water]);
         }
     }
 
@@ -149,7 +149,7 @@ public class MapNode
         MaxNeeds[Needs.Food] = NeedAmounts[Needs.Food];
         if (NeedAmounts[Needs.Food] > 0)
         {
-            Debug.Log("Food: " + NeedAmounts[Needs.Food]);
+            //Debug.Log("Food: " + NeedAmounts[Needs.Food]);
         }
     }
 
@@ -171,7 +171,7 @@ public class MapNode
         MaxNeeds[Needs.Shelter] = NeedAmounts[Needs.Shelter];
         if (NeedAmounts[Needs.Shelter] > 0)
         {
-            Debug.Log("Shelter: " + NeedAmounts[Needs.Shelter]);
+            //Debug.Log("Shelter: " + NeedAmounts[Needs.Shelter]);
         }
     }
 

@@ -16,7 +16,7 @@ public class MapDrawer : MonoBehaviour {
 
 	public Material MapMaterial;
 
-	public float RoadWidth = 0.5f;
+	public float RoadWidth = 0.1f;
 
 	private MapController _mapController;
 	public MapController MapController {

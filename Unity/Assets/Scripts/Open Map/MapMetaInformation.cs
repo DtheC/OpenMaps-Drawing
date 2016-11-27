@@ -64,7 +64,7 @@ public class MapMetaInformation : MonoBehaviour {
 		}
 	}
 
-    public string[] WaterTags = { "drinking_water", "water", "refreshments", "pool" };
+    public string[] WaterTags = { "drinking_water", "water", "refreshments", "pool", "river", "lake", "pond", "reservoir", "harbour", "drinks" };
     public string[] FoodTags = { "restaurant", "cafe", "groceries", "lunch" };
     public string[] ShelterTags = { "hotel", "motel", "bed", "shelter" };
 
