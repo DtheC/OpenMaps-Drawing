@@ -27,7 +27,9 @@ public class WayTracerMovementRigid : WaytracerMovement
         {
             Parent.TravellingToMapNode = Parent.ParentEmitter.GetRandomRoadNode();
         }
+        Parent.transform.LookAt(Parent.TravellingToMapNode.LocationInUnits);
         Parent.transform.position = Vector3.MoveTowards(Parent.transform.position, Parent.TravellingToMapNode.LocationInUnits, step);
+        
     }
 }
 

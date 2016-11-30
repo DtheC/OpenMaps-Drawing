@@ -16,7 +16,7 @@ public class MapDrawer : MonoBehaviour {
 
 	public Material MapMaterial;
 
-	public float RoadWidth = 0.1f;
+	public float RoadWidth = 0.5f;
 
 	private MapController _mapController;
 	public MapController MapController {
@@ -202,7 +202,7 @@ public class MapDrawer : MonoBehaviour {
         if (DrawAll)
         {
             byte red = (byte)((node.NeedAmounts[Needs.Food] + node.NearbyNeedAmounts[Needs.Food]) * 255);
-            byte green = (byte)((node.NeedAmounts[Needs.Food] + node.NearbyNeedAmounts[Needs.Shelter]) * 255);
+            byte green = (byte)((node.NeedAmounts[Needs.Shelter] + node.NearbyNeedAmounts[Needs.Shelter]) * 255);
             byte blue = needColor = (byte)((node.NeedAmounts[Needs.Water] + node.NearbyNeedAmounts[Needs.Water]) * 255);
 
             vertexColor = new Color32(red, green, blue, 255);

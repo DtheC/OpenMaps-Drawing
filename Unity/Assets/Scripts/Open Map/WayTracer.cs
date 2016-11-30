@@ -225,7 +225,7 @@ public class EntityNeed
 
 public class EntityGenes
 {
-    public float Speed = Random.Range(1.00f, 5.00f); //How quickly it moves
+    public float Speed = Random.Range(1.00f, 1.05f); //How quickly it moves
     public float PullFood = Random.Range(0.00f, 1.00f); //How much it wants to find food
     public float PullWater = Random.Range(0.00f, 1.00f); //How much it wants to find water
     public float PullShelter = Random.Range(0.00f, 1.00f); //How much it wants to find shelter
@@ -344,9 +344,11 @@ public class WayTracer : MonoBehaviour
     public EntityNeeds EntitiesPreviousNeeds = new EntityNeeds();
     public float[] EntitiesBrainOutputs = new float[4];
 
+    public Animator anim;
+
     public EntityNeeds EntitiesNeeds = new EntityNeeds();
     private WaytracerMovement _tracerMovement;
-    
+
     public float triggerDistance = 0.01f;
 
     private MapController _mapController;
@@ -365,6 +367,7 @@ public class WayTracer : MonoBehaviour
     public EntityGenes Genetics = new EntityGenes();
     public NodeTracker NodeTracker = new NodeTracker();
     public TrailRenderer trail;
+    public bool Dead = false;
 
     public MapNode TravellingToMapNode
     {
@@ -420,11 +423,11 @@ public class WayTracer : MonoBehaviour
     {
         if (Genetics == null)
         {
-            Genetics = new EntityGenes ();
-		}
-            //Debug.Log("New Entity created!");
-            //Debug.Log(Genetics.ToString());
-        
+            Genetics = new EntityGenes();
+        }
+        //Debug.Log("New Entity created!");
+        //Debug.Log(Genetics.ToString());
+
         _mapController = _m;
         _parentEmitter = _w;
         _tracerMovement = _move;
@@ -442,6 +445,12 @@ public class WayTracer : MonoBehaviour
         GetNextConnection();
     }
 
+    void Start()
+    {
+        FullSize = Random.Range(0.780f, 0.820f);
+        StartCoroutine(ScaleIn());
+        //gameObject.GetComponent<Animator>().speed = Genetics.Speed/5.0f;
+    }
     void Update()
     {
         /*
@@ -474,10 +483,11 @@ public class WayTracer : MonoBehaviour
         {
             _currentMapNodeId = _currentMapNode._id;
             gameObject.transform.position = _currentMapNode.LocationInUnits;
-        } else
+        }
+        else
         {
             GetRandomStartingNode();
-        }   
+        }
     }
 
     float GeneAlgorithm(float geneLevel, float currentNeedLevel, float nodeNeedLevel)
@@ -509,9 +519,9 @@ public class WayTracer : MonoBehaviour
         else
         {
 
-           // _travellingToMapNode = _currentMapNode.GetRandomNeighbour();
+            // _travellingToMapNode = _currentMapNode.GetRandomNeighbour();
 
-            
+
             //Pull in neightbours and make decision based on genes as to which to attend to next.
             //For the three Needs, check each neighbour node to find which returns the highest value, then of those three go in the direction of
             //the highest.
@@ -569,12 +579,13 @@ public class WayTracer : MonoBehaviour
 
             if (EntitiesNeeds.HasPressingNeed(Genetics.DesperationValue))
             {
-                
+
                 //Desperation mode should take into account visited nodes.
                 //Debug.Log("Desperation mode activated");
                 for (int i = 0; i < _currentMapNode.ConnectedNodes.Count; i++)
                 {
-                    if (!NodeTracker.NodeVisited(_currentMapNode.ConnectedNodes[i]._id)){
+                    if (!NodeTracker.NodeVisited(_currentMapNode.ConnectedNodes[i]._id))
+                    {
                         directionToMove = i;
                         if (Random.value > 0.5f)
                         {
@@ -585,7 +596,7 @@ public class WayTracer : MonoBehaviour
 
 
                 //directionToMove = Random.Range(0, _currentMapNode.ConnectedNodes.Count);
-                
+
                 //directionToMove = hungerValue > waterValue ? hungerValue > shelterValue ? hungerIndex : waterValue > shelterValue ? waterIndex : shelterIndex : waterValue > shelterValue ? waterIndex : shelterIndex; //Return the index of the largest value
                 /*
                 List<Needs> x = EntitiesNeeds.GetPressingNeeds(Genetics.DesperationValue);
@@ -605,8 +616,9 @@ public class WayTracer : MonoBehaviour
                         break;
                 }
                 */
-                
-            } else
+
+            }
+            else
             {
 
                 if (hungerValue > waterValue && hungerValue > shelterValue)
@@ -624,16 +636,16 @@ public class WayTracer : MonoBehaviour
                 //directionToMove = hungerValue > waterValue ? hungerValue > shelterValue ? hungerIndex : waterValue > shelterValue ? waterIndex : shelterIndex : waterValue > shelterValue ? waterIndex : shelterIndex; //Return the index of the largest value
             }
 
-            
-            
-            
+
+
+
             //Debug.Log("Direction chosen: " + directionToMove+" of a possible "+_currentMapNode.ConnectedNodes.Count);
             //Debug.Log("Values at play were: HungerValue/Index: " + hungerValue + "/" + hungerIndex + " WaterValue/Index: " + waterValue + "/" + waterIndex + "ShelterValue/Index: " + shelterValue + "/" + shelterIndex);
-                //Debug.Log(hungerValue + ", " + waterValue + ", "+shelterValue);
+            //Debug.Log(hungerValue + ", " + waterValue + ", "+shelterValue);
             _travellingToMapNode = _currentMapNode.ConnectedNodes[directionToMove];
             NodeTracker.AddNode(_currentMapNode.ConnectedNodes[directionToMove]._id);
             //Debug.Log(_currentMapNode.ConnectedNodes[directionToMove]._id);
-    
+
         }
 
         //Add the values of the current location to the Entities' needs
@@ -666,17 +678,24 @@ public class WayTracer : MonoBehaviour
 
     public void Instakill()
     {
-        ParentEmitter.EntityDies(this);
-        DestroyImmediate(gameObject);
+        {
+            //ParentEmitter.EntityDies(this);
+            //Dead = true;
+            Destroy(gameObject);
+        }
     }
 
     void CheckIfDead()
     {
-        if (EntitiesNeeds.Dead())
+        if (!Dead)
         {
-            //Goodbye :(
-            ParentEmitter.EntityDies(this);
-            Destroy(gameObject);
+            if (EntitiesNeeds.Dead())
+            {
+                //Goodbye :(
+                ParentEmitter.EntityDies(this);
+                Dead = true;
+                //Destroy(gameObject);
+            }
         }
     }
 
@@ -685,5 +704,45 @@ public class WayTracer : MonoBehaviour
         _entityColour.color = new Color(EntitiesNeeds.GetNeedValue(Needs.Food), EntitiesNeeds.GetNeedValue(Needs.Shelter), EntitiesNeeds.GetNeedValue(Needs.Water));
         Color trailCol = Color.Lerp(trail.material.GetColor("_TintColor"), _entityColour.color, 0.1f);
         trail.material.SetColor("_TintColor", trailCol);
+    }
+
+    public void Disappear()
+    {
+        trail.enabled = false;
+        StopAllCoroutines();
+        StartCoroutine(ScaleOut());
+    }
+
+    public void Reappear()
+    {
+        trail.enabled = true;
+        StopAllCoroutines();
+        StartCoroutine(ScaleIn());
+    }
+
+    public float FullSize;
+    public float GrowFactor = 0.1f;
+
+
+    IEnumerator ScaleOut()
+    {
+        while (transform.localScale.x > 0)
+        {
+            transform.localScale -= new Vector3(1, 1, 1) * GrowFactor;
+            yield return null;
+        }
+        StopCoroutine(ScaleOut());
+    }
+
+    IEnumerator ScaleIn()
+    {
+        // we scale all axis, so they will have the same value, 
+        // so we can work with a float instead of comparing vectors
+        while (FullSize > transform.localScale.x)
+        {
+            transform.localScale += new Vector3(FullSize, FullSize, FullSize) * GrowFactor;
+            yield return null;
+        }
+        StopCoroutine(ScaleIn());
     }
 }
